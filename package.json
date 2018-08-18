@@ -5,13 +5,9 @@
   "main": "index.js",
   "scripts": {
     "babel": "babel-node ./src/index.js --presets es2015",
-    "start": "PLATFORM=v6Prev nodemon --watch src/ --exec npm run babel",
-    "build": "rm -Rf ./lib && babel src -d lib",
-    "_deploy": "NODE_ENV=production nodemon --ignore assets/ --exec npm run babel",
-    "init": "mkdir -p ./assets/manager/build",
-    "fe:server": "npm run init; NODE_ENV=production pm2 start ./lib/servers/fe.server.js --name='fe:server'",
-    "babel:fe": "nodemon --watch src/ --exec DEBUG=express:* babel-node ./src/servers/fe.server.js --presets es2015",
-    "babel:i": "nodemon --watch src/ --exec DEBUG=express:* PLATFORM=v6Prev babel-node ./src/index.js --presets es2015"
+    "start": "NODE_ENV=development nodemon --watch src/ --exec npm run babel",
+    "restartServer": "NODE_ENV=production pm2 restart orion-web-server",
+    "deploy": "NODE_ENV=production pm2 restart app.js --name 'orion-web-server'"
   },
   "repository": {
     "type": "git",

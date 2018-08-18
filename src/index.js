@@ -1,15 +1,21 @@
 let express = require('express');
 let helmet = require('helmet');
 let dynamicRoute = require('./dynamic-router');
-let notFound = require('./notfound');
+let handleError = require('./error-handler');
+let publicRouter = require('./public-assets');
+let processUpdater = require('./process-updater');
 
 let app = express();
 
 app.use(helmet());
-try {
-  app.use(dynamicRoute);
-} catch(e) {
-  app.use(notFound);
-}
+
+app.use(dynamicRoute);
+
+app.use(publicRouter);
+
+app.use(processUpdater);
+
+// 最后处理所有错误
+app.use(handleError);
 
 app.listen(3000);

@@ -1,1 +1,1 @@
-var app = require('./lib');
+require('./src');
