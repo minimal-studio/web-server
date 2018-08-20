@@ -16,6 +16,6 @@ app.use(publicRouter);
 app.use(processUpdater);
 
 // 最后处理所有错误
-app.use(handleError);
+// app.use(handleError);
 
 app.listen(3000);

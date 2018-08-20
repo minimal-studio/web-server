@@ -1,6 +1,6 @@
 let express = require('express');
 let bodyParser = require('body-parser');
-let router = express.Router();
+let dynamicRouter = express.Router();
 let path = require('path');
 let notFound = require('./notfound');
 
@@ -12,13 +12,14 @@ let dynamicRoute = (req, res) => {
   let dynamicRoutersPath = path.join(process.cwd(), './dynamic-routres', req.params.route);
   try {
     let currRouter = require(dynamicRoutersPath);
+    // if(currRouter.subRouter) dynamicRouter.use(currRouter.subRouter);
     currRouter(req, res);
   } catch(e) {
     notFound(req, res);
   }
 }
 
-router.get('/', rootRoute);
-router.get('/:route', dynamicRoute);
+dynamicRouter.get('/', rootRoute);
+dynamicRouter.get('/:route', dynamicRoute);
 
-module.exports = router;
+module.exports = dynamicRouter;
