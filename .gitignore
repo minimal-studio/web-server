@@ -31,3 +31,4 @@ package-lock.json
 yarn.lock
 public/posts/
 version.js
+web-server.log

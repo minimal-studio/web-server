@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "babel": "babel-node ./src/index.js --presets es2015",
-    "start": "NODE_ENV=development nodemon --watch src/ --watch dynamic-routres/ --exec npm run babel",
+    "babel": "babel-node ./servers/index.js --presets es2015",
+    "start": "NODE_ENV=development nodemon --watch routers/ --watch servers/ --watch dynamic-routres/ --exec npm run babel",
     "restartServer": "NODE_ENV=production pm2 restart orion-web-server",
     "deploy": "NODE_ENV=production pm2 restart app.js --name 'orion-web-server'"
   },
