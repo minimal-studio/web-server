@@ -3,7 +3,7 @@ let dynamicRoute = require('../../routers/dynamic-router');
 
 let dyApp = express.Router();
 
-dyApp.use('/', dynamicRoute);
+dyApp.use(dynamicRoute);
 
 // 外层的路由的别名
 dyApp.alias = 'dyr';

@@ -4,6 +4,7 @@ let helmet = require('helmet');
 let morgan = require('morgan');
 let fs = require('fs');
 let path = require('path');
+let cors = require('cors')
 
 // let dynamicRoute = require('../routers/dynamic-router');
 let publicRouter = require('../routers/public-assets');
@@ -14,6 +15,7 @@ let app = express();
 
 app.use(helmet());
 app.use(compression());
+app.use(cors());
 
 let accessLogStream = fs.createWriteStream(path.join(process.cwd(), '/web-server.log'), {flags: 'a'});
 app.use(morgan('combined', {stream: accessLogStream}));

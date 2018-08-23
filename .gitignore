@@ -32,3 +32,4 @@ yarn.lock
 public/posts/
 version.js
 web-server.log
+test-data.js

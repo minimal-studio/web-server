@@ -19,7 +19,7 @@ let dynamicRoute = (req, res) => {
   }
 }
 
-dynamicRouter.get('/', rootRoute);
-dynamicRouter.get('/:route', dynamicRoute);
+dynamicRouter.use('/:route', dynamicRoute);
+dynamicRouter.use('/', rootRoute);
 
 module.exports = dynamicRouter;
