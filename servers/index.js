@@ -1,10 +1,10 @@
 let express = require('express');
 let compression = require('compression');
 let helmet = require('helmet');
+let cors = require('cors')
 let morgan = require('morgan');
 let fs = require('fs');
 let path = require('path');
-let cors = require('cors')
 
 // let dynamicRoute = require('../routers/dynamic-router');
 let publicRouter = require('../routers/public-assets');
@@ -26,7 +26,16 @@ pathInfos.filter(dirname => dirname.indexOf(ignoreFirld) == -1).forEach((dirname
   // console.log(dirname)
   let currServer = require('./' + dirname);
   let serverPath = currServer.alias || dirname;
-  app.use(`/${serverPath}`, currServer);
+  let startSubServer = currServer.start;
+  if(startSubServer) {
+    try {
+      startSubServer();
+    } catch(e) {
+      console.log(e)
+    }
+  } else {
+    app.use(`/${serverPath}`, currServer);
+  }
 });
 
 
@@ -41,7 +50,7 @@ app.use(publicRouter);
 
 // app.use(processUpdater);
 
-// // 最后处理所有错误
-// // app.use(handleError);
+// 最后处理所有错误
+if(process.env.NODE_ENV == 'production') app.use(handleError);
 
 app.listen(3000);
