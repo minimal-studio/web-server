@@ -4,17 +4,16 @@ const uuidv3 = require('uuid/v3');
 const uuidv1 = require('uuid/v1');
 const path  = require('path');
 const multer  = require('multer');
-const fse  = require('fs-extra');
+// const fse  = require('fs-extra');
+const fs  = require('fs');
 
-const config = require('./config');
+const { db, getDeployPath, zipAssetsStorePath, audit, getAudit } = require('./config');
 const unzipFile = require('./unzip');
 
 let deploymentRouter = express.Router();
 
 const jsonParser = bodyParser.json();
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
-
-const { db, getAssetsPath, zipAssetsStorePath, audit, getAudit } = config;
 
 /**
  * convert obj to array
@@ -32,7 +31,7 @@ function objToArr(obj, deleteFields, limit = 30) {
     result.push(item);
     taked++;
   }
-  return result;
+  return result.reverse();
 }
 
 const fileStorageConfig = multer.diskStorage({
@@ -144,7 +143,7 @@ deploymentRouter.post('/project', jsonParser, (req, res) => {
     desc: 'username, projName, projCode are required.'
   });
   const createProjId = uuidv3(projName + projCode + username, uuidv3.DNS);
-  const { deployStorePath } = getAssetsPath(projCode);
+  // const { deployStorePath } = getAssetsPath(projCode);
 
   let newProj = {
     id: createProjId,
@@ -155,7 +154,7 @@ deploymentRouter.post('/project', jsonParser, (req, res) => {
     webhook,
     founder: username,
     collaborators: {},
-    deployPath: deployStorePath,
+    // deployPath: deployStorePath,
   };
   
   db.set(`projects.${createProjId}`, newProj).write();
@@ -177,14 +176,10 @@ deploymentRouter.post('/project', jsonParser, (req, res) => {
 deploymentRouter.post('/release', [jsonParser, checkProjAuth], (req, res) => {
   let { project, asset } = req.assetConfig;
   let zipFilePath = path.join(zipAssetsStorePath, asset.id + '.zip');
-  let outputPath = project.deployPath;
+  let outputPath = getDeployPath(project.projCode);
 
-  let noteFile = path.join(outputPath, './q');
-
-  try {
-    fse.ensureFileSync(noteFile);
-  } catch(e) {
-    fse.writeFileSync(noteFile, '');
+  if(!fs.existsSync(outputPath)) {
+    fs.mkdirSync(outputPath);
   }
 
   unzipFile(zipFilePath, outputPath).then(() => {
@@ -248,10 +243,10 @@ deploymentRouter.post('/del-project', [jsonParser, checkProjAuth], (req, res) =>
 deploymentRouter.post('/upload', upload.single('assetZip'), (req, res) => {
   const { founder, projId } = req.body;
   let targetProject = db.get(`projects.${projId}`).value();
+  let { assetsCount } = targetProject;
   if(targetProject.founder == founder || !!targetProject.collaborators[founder]) {
     let { desc } = req.body;
-    let assetState = db.get('assets').value();
-    let currVersion = (Object.keys(assetState).length || 0) + 1;
+    let currVersion = (+assetsCount || 0) + 1;
     let assetId = req.file.filename.split('.')[0];
     let nextAssetState = {
       belongto: projId,
@@ -264,6 +259,7 @@ deploymentRouter.post('/upload', upload.single('assetZip'), (req, res) => {
       founder
     }
     db.set(`assets.${assetId}`, nextAssetState).write();
+    db.set(`projects.${projId}.assetsCount`, currVersion).write();
     let releaseLog = {
       username: founder,
       type: 'createAsset'
@@ -285,15 +281,18 @@ deploymentRouter.post('/upload', upload.single('assetZip'), (req, res) => {
  */
 deploymentRouter.get('/assets', (req, res) => {
   let { projId } = req.query;
+  let assetListObjData = {};
   if(!projId) {
-    let assetsObj = db.get('assets').sortBy('createdDate').reverse().value();
+    assetListObjData = db.get('assets').sortBy('createdDate').value();
     return res.json(objToArr(assetsObj));
   } else {
-    let assetsList = db.get('assets').find({
-      belongto: projId
-    }).value();
-    res.json(assetsList);
+    let assetsData = db.get('assets').value();
+    assetListObjData = findAll(assetsData, {belongto: projId});
   }
+  res.json({
+    err: null,
+    data: objToArr(assetListObjData)
+  });
 });
 
 /**

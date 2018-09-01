@@ -2,18 +2,20 @@ const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
 const path = require('path');
 const fse = require('fs-extra');
+const fs = require('fs');
 
-const dbStorePath = path.join(process.cwd(), './f-e-deployment-store/store.json');
-const auditdbStorePath = path.join(process.cwd(), './f-e-deployment-store/audit-store.json');
-const staticServerPath = path.join(process.cwd(), './assets/public');
-const zipAssetsStorePath = path.join(process.cwd(), './assets/zips');
+const cwd = process.cwd();
+const dbPath = path.join(cwd, './f-e-deployment-store');
+const dbStorePath = path.join(dbPath, './store.json');
+const auditdbStorePath = path.join(dbPath, './audit-store.json');
+const staticServerPath = path.join(cwd, './assets/public');
+const zipAssetsStorePath = path.join(cwd, './assets/zips');
 
-try {
-  fse.ensureFileSync(dbStorePath);
-} catch(e) {
+if(!fs.existsSync(dbStorePath)) {
+  fse.mkdirpSync(zipAssetsStorePath);
+  fse.mkdirpSync(dbPath);
   fse.writeJsonSync(dbStorePath, {});
   fse.writeJsonSync(auditdbStorePath, {});
-  fse.mkdir(zipAssetsStorePath);
 }
 
 const adapter = new FileSync(dbStorePath);
@@ -35,6 +37,10 @@ module.exports = {
   dbStorePath,
   staticServerPath,
   zipAssetsStorePath,
+  getDeployPath: (projCode) => {
+    if(!projCode) return console.log('need to pass projCode');
+    return path.join(staticServerPath, projCode);
+  },
   getAssetsPath: (projCode) => {
     let assetDir = path.join(staticServerPath, projCode);
     // let deployStorePath = path.join(assetDir, './deploy');

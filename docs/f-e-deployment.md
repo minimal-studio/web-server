@@ -39,6 +39,7 @@
       releaseRef: '',
       createdDate: datetime,
       motifyDate: datetime,
+      assetsCount: 1,
       collaborators: {
         zoe: {
           updatable: true,
@@ -46,7 +47,6 @@
           releasable: true,
         },
       },
-      deployPath: 'absulote_path',
       deployedVersion: 1,
     }
   },
