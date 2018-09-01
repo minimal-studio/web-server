@@ -17,6 +17,11 @@
 5. 有权限的人可以进行发布，回滚等操作
 6. 发送通知，可以是 telegram 的机器人通知，可以是邮件通知
 
+TODO
+
+1. 制定数据清理机制，根据以往经验，保留最近30个项目资源，超出的自动清理，包括文件存储的字段
+2. 制定审计记录归档机制，默认方式为，把需要归档的 audit-store.json 放到 ./f-e-deployment-store/audit-archive 下，并且新建一个 audit-store.json 替换
+
 存储路径
 
 - 压缩包 /assets/public/uuid(projName)/zips
