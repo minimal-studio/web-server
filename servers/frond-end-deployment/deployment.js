@@ -14,17 +14,23 @@ let deploymentRouter = express.Router();
 const jsonParser = bodyParser.json();
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 
-const { db, getAssetsPath, zipAssetsStorePath, releaseNote } = config;
+const { db, getAssetsPath, zipAssetsStorePath, audit, getAudit } = config;
 
-function objToArr(obj, deleteFields) {
+/**
+ * convert obj to array
+ */
+function objToArr(obj, deleteFields, limit = 30) {
   let result = [];
+  let taked = 0;
   deleteFields = Array.isArray(deleteFields) ? deleteFields : [deleteFields];
   for (const key in obj) {
+    if(taked == limit) return;
     let item = Object.assign({}, obj[key]);
     deleteFields.forEach(delF => {
       if(item.hasOwnProperty(delF)) delete item[delF];
-    })
+    });
     result.push(item);
+    taked++;
   }
   return result;
 }
@@ -40,10 +46,15 @@ const fileStorageConfig = multer.diskStorage({
 });
 const upload = multer({storage: fileStorageConfig});
 
+/**
+ * 简易的用户权限判断中间件
+ * 根据 project 的 founder 和 collaborators 来判断
+ * 如果没有对应的权限，会直接返回
+ */
 const checkProjAuth = (req, res, next) => {
   let { username, projId, assetId } = req.body;
-  let currProjConfig = db.get(`projects.${projId}`).value();
-  let currAssetConfig = db.get(`assets.${assetId}`).value();
+  let currProjConfig = db.get(`projects.${projId}`).value() || {};
+  let currAssetConfig = db.get(`assets.${assetId}`).value() || {};
 
   let assetConfig = {
     username,
@@ -51,10 +62,13 @@ const checkProjAuth = (req, res, next) => {
     asset: currAssetConfig,
   }
 
-  if(currProjConfig.founder == username || !!currProjConfig.collaborators[username]) {
+  if(!!username && (currProjConfig.founder == username || !!currProjConfig.collaborators[username])) {
     assetConfig.isPass = true;
   } else {
     assetConfig.isPass = false;
+    return res.json({
+      err: 'You have no promission to do that.'
+    });
   }
 
   req.assetConfig = assetConfig;
@@ -62,14 +76,53 @@ const checkProjAuth = (req, res, next) => {
   next();
 }
 
+function findAll(obj, findParams) {
+  let res = {};
+  for (const key in obj) {
+    const item = obj[key];
+    for (const targetKey in findParams) {
+      const targetVal = findParams[targetKey];
+      if(typeof targetVal == 'function') {
+        if(targetVal(item)) {
+          res[key] = item;
+        }
+      } else if(item[targetKey] == targetVal) {
+        res[key] = item;
+      }
+    }
+  }
+  return res;
+}
+
+/**
+ * query project
+ */
 deploymentRouter.get('/project', (req, res) => {
-  let { projId, user } = req.query;
+  let { projId, user, range } = req.query;
   if(!user) res.json({ err: 'must pass username' });
   let result;
   if(projId) {
-    result = db.get(`projects.${projId}`).sortBy('createdDate').value();
+    result = Object.assign({}, db.get(`projects.${projId}`).value());
+    delete result['deployPath'];
   } else {
-    result = objToArr(db.get(`projects`).value(), 'deployPath');
+    let projectObj = db.get(`projects`).value();
+    let projectData = {};
+    if(!!range) {
+      switch (range) {
+        case 'me':
+          projectData = findAll(projectObj, {founder: user});
+          break;
+        case 'join':
+          projectData = findAll(projectObj, {collaborators: (o) => {
+            return o.hasOwnProperty(user);
+          }});
+          break;
+        case 'all':
+          projectData = projectObj;
+          break;
+      }
+    }
+    result = objToArr(projectData, 'deployPath');
   }
   res.json({
     err: null,
@@ -77,6 +130,9 @@ deploymentRouter.get('/project', (req, res) => {
   });
 });
 
+/**
+ * create project
+ */
 deploymentRouter.post('/project', jsonParser, (req, res) => {
   const { username, projName, projCode, projDesc, webhook } = req.body;
   let isProjExist = !!db.get('projects').find({
@@ -103,7 +159,7 @@ deploymentRouter.post('/project', jsonParser, (req, res) => {
   };
   
   db.set(`projects.${createProjId}`, newProj).write();
-  releaseNote(createProjId, {
+  audit(createProjId, {
     username,
     note: projDesc,
     type: 'createProj'
@@ -115,51 +171,80 @@ deploymentRouter.post('/project', jsonParser, (req, res) => {
   });
 });
 
+/**
+ * release specified asset of specified project
+ */
 deploymentRouter.post('/release', [jsonParser, checkProjAuth], (req, res) => {
-  let { project, asset, isPass } = req.assetConfig;
-  if(isPass) {
-    let zipFilePath = path.join(zipAssetsStorePath, asset.id + '.zip');
-    let outputPath = project.deployPath;
+  let { project, asset } = req.assetConfig;
+  let zipFilePath = path.join(zipAssetsStorePath, asset.id + '.zip');
+  let outputPath = project.deployPath;
 
-    let noteFile = path.join(outputPath, './q.json');
+  let noteFile = path.join(outputPath, './q');
 
-    try {
-      fse.ensureFileSync(noteFile);
-    } catch(e) {
-      fse.writeJsonSync(noteFile, {});
-    }
-
-    unzipFile(zipFilePath, outputPath).then(() => {
-      // console.log('success')
-      let { username, projId, assetId } = req.body;
-      let releaseLog = {
-        operator: username,
-        version: asset.version,
-        note: asset.desc,
-        type: 'release'
-      };
-      project.releaseRef = assetId;
-      db.set(`projects.${projId}`, project).write();
-      releaseNote(projId, releaseLog);
-      res.json({
-        err: null
-      });
-    });
-  } else {
-    return res.json({
-      err: 'You have no promission to release this project'
-    })
+  try {
+    fse.ensureFileSync(noteFile);
+  } catch(e) {
+    fse.writeFileSync(noteFile, '');
   }
+
+  unzipFile(zipFilePath, outputPath).then(() => {
+    let { username, projId, assetId } = req.body;
+    let releaseLog = {
+      operator: username,
+      version: asset.version,
+      note: asset.desc,
+      type: 'release'
+    };
+    project.releaseRef = assetId;
+    db.set(`projects.${projId}`, project).write();
+    audit(projId, releaseLog);
+    res.json({
+      err: null
+    });
+  }, () => {
+    return res.json({
+      err: 'File not exist.'
+    });
+  }).catch((err) => {
+    return res.json({
+      err: err + ''
+    });
+  });
 });
 
-deploymentRouter.post('/edit-project', (req, res) => {
-  res.send('put project')
+/**
+ * update project whit simple auth
+ */
+deploymentRouter.put('/project', [jsonParser, checkProjAuth], (req, res) => {
+  let { project } = req.assetConfig;
+  let { projCode, projName, projDesc, webhook } = req.body;
+  let nextProj = Object.assign({}, project, {
+    motifyDate: Date.now(),
+    projCode, projName, projDesc, webhook
+  });
+  db.set(`projects.${project.id}`, nextProj).write();
+  res.json({
+    err: null,
+    data: nextProj
+  })
 });
 
-deploymentRouter.post('/del-project', (req, res) => {
-  res.send('delete project')
+/**
+ * delete project
+ */
+deploymentRouter.post('/del-project', [jsonParser, checkProjAuth], (req, res) => {
+  // res.send('delete project')
+  let { project, asset } = req.assetConfig;
+  // console.log(project, asset)
+  // TODO: 删除记录，并且删除文件
+  res.json({
+    err: 'not yet.'
+  })
 });
 
+/**
+ * handle uploaded asset
+ */
 deploymentRouter.post('/upload', upload.single('assetZip'), (req, res) => {
   const { founder, projId } = req.body;
   let targetProject = db.get(`projects.${projId}`).value();
@@ -183,7 +268,7 @@ deploymentRouter.post('/upload', upload.single('assetZip'), (req, res) => {
       username: founder,
       type: 'createAsset'
     }
-    releaseNote(projId, releaseLog);
+    audit(projId, releaseLog);
     return res.json({
       err: null,
       data: nextAssetState
@@ -195,10 +280,13 @@ deploymentRouter.post('/upload', upload.single('assetZip'), (req, res) => {
   }
 });
 
+/**
+ * query assets
+ */
 deploymentRouter.get('/assets', (req, res) => {
   let { projId } = req.query;
   if(!projId) {
-    let assetsObj = db.get('assets').sortBy('createdDate').value();
+    let assetsObj = db.get('assets').sortBy('createdDate').reverse().value();
     return res.json(objToArr(assetsObj));
   } else {
     let assetsList = db.get('assets').find({
@@ -208,6 +296,26 @@ deploymentRouter.get('/assets', (req, res) => {
   }
 });
 
+/**
+ * audit log
+ */
+deploymentRouter.get('/audit', (req, res) => {
+  let { projId } = req.query;
+  if(!projId) {
+    res.json({
+      err: 'need projId.'
+    })
+  } else {
+    res.json({
+      err: null,
+      data: objToArr(getAudit(projId))
+    });
+  }
+});
+
+/**
+ * rollback
+ */
 deploymentRouter.post('/rollback', jsonParser, (req, res) => {
   let { projId, assetId, why,  } = req.body;
 });

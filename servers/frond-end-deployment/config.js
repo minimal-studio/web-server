@@ -4,6 +4,7 @@ const path = require('path');
 const fse = require('fs-extra');
 
 const dbStorePath = path.join(process.cwd(), './f-e-deployment-store/store.json');
+const auditdbStorePath = path.join(process.cwd(), './f-e-deployment-store/audit-store.json');
 const staticServerPath = path.join(process.cwd(), './assets/public');
 const zipAssetsStorePath = path.join(process.cwd(), './assets/zips');
 
@@ -11,18 +12,23 @@ try {
   fse.ensureFileSync(dbStorePath);
 } catch(e) {
   fse.writeJsonSync(dbStorePath, {});
+  fse.writeJsonSync(auditdbStorePath, {});
   fse.mkdir(zipAssetsStorePath);
 }
 
 const adapter = new FileSync(dbStorePath);
 const db = low(adapter);
 
+const auditAdapter = new FileSync(auditdbStorePath);
+const auditdb = low(auditAdapter);
+
 db.defaults({
   version: 1,
   projects: {},
-  releaseLog: {},
   assets: {},
 }).write();
+
+auditdb.defaults({}).write();
 
 module.exports = {
   port: 6650,
@@ -50,13 +56,21 @@ module.exports = {
       data
     };
   },
-  releaseNote: (projId, note) => {
-    note.date = Date.now();
-    note.operator = note.username;
-    delete note.username;
-    if(!db.get(`releaseLog.${projId}`).value()) {
-      db.set(`releaseLog.${projId}`, []).write();
+  audit: (projId, note) => {
+    let operator = note.operator || note.username || '';
+    if(!operator) return 'need pass username.';
+    let nextState = Object.assign({}, note, {
+      date: Date.now(),
+      operator: operator
+    });
+    delete nextState['username'];
+    if(!auditdb.get(`${projId}`).value()) {
+      auditdb.set(`${projId}`, []).write();
     }
-    db.get(`releaseLog.${projId}`).push(note).write();
+    console.log(nextState)
+    auditdb.get(`${projId}`).push(nextState).write();
+  },
+  getAudit: (projId) => {
+    return auditdb.get(`${projId}`).value();
   }
 }

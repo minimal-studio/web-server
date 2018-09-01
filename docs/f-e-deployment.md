@@ -6,6 +6,7 @@
 2. 创建人可以完全控制 project 和 asset 的增删改
 3. 其他登入的角色也可以查看，但是需要像 founder 申请权限，加入 collaborator
 4. founder 可以添加删除 collaborator
+5. 除了查询以外的操作都会做审计记录
 
 资源管理的基本流程
 
@@ -24,6 +25,7 @@
 存储结构
 
 ```js
+// store.js
 {
   version: 1,
   projects: {
@@ -35,6 +37,8 @@
       founder: 'alex',
       webhook: 'url',
       releaseRef: '',
+      createdDate: datetime,
+      motifyDate: datetime,
       collaborators: {
         zoe: {
           updatable: true,
@@ -57,15 +61,19 @@
       rollbackMark: '',
       founder: 'alex'
     }
-  },
-  releaseLog: {
-    [projId]: [{
-      operator: 'alex',
-      date: '',
-      version: '',
-      note: '',
-      type: 'rollback || release || createProj || createAsset'
-    }]
   }
+}
+```
+
+```js
+// audit.js
+{
+  [projId]: [{
+    operator: 'alex',
+    date: '',
+    version: '',
+    note: '',
+    type: 'rollback || release || createProj || createAsset'
+  }]
 }
 ```

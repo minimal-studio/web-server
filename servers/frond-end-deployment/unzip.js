@@ -3,13 +3,12 @@ const fs = require('fs');
 
 const unzipFile = (inputPath, outputPath) => {
   return new Promise((resolve, reject) => {
-    try {
+    if (fs.existsSync(inputPath)) {
       fs.createReadStream(inputPath)
         .pipe(unzip.Extract({ path: outputPath }));
-      resolve();
-    } catch(e) {
-      console.log(e)
-      reject();
+      return resolve();
+    } else {
+      return reject();
     }
   });
 }
