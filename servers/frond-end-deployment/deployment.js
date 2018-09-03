@@ -102,7 +102,6 @@ deploymentRouter.get('/project', (req, res) => {
   let result;
   if(projId) {
     result = Object.assign({}, db.get(`projects.${projId}`).value());
-    delete result['deployPath'];
   } else {
     let projectObj = db.get(`projects`).value();
     let projectData = {};
@@ -121,7 +120,7 @@ deploymentRouter.get('/project', (req, res) => {
           break;
       }
     }
-    result = objToArr(projectData, 'deployPath');
+    result = objToArr(projectData);
   }
   res.json({
     err: null,
@@ -154,7 +153,6 @@ deploymentRouter.post('/project', jsonParser, (req, res) => {
     webhook,
     founder: username,
     collaborators: {},
-    // deployPath: deployStorePath,
   };
   
   db.set(`projects.${createProjId}`, newProj).write();
