@@ -7,7 +7,7 @@ const multer  = require('multer');
 // const fse  = require('fs-extra');
 const fs  = require('fs');
 
-const { db, getDeployPath, zipAssetsStorePath, audit, getAudit } = require('./config');
+const { db, getDeployPath, zipAssetsStorePath, audit, getAudit, maxAssetCount } = require('./config');
 const unzipFile = require('./unzip');
 
 let deploymentRouter = express.Router();
@@ -170,11 +170,7 @@ deploymentRouter.post('/project', jsonParser, (req, res) => {
   });
 });
 
-/**
- * release specified asset of specified project
- */
-deploymentRouter.post('/release', [jsonParser, checkProjAuth], (req, res) => {
-  let { project, asset } = req.assetConfig;
+const releaseAsset = ({ project, asset }) => {
   let zipFilePath = path.join(zipAssetsStorePath, asset.id + '.zip');
   let outputPath = getDeployPath(project.projCode);
 
@@ -182,7 +178,15 @@ deploymentRouter.post('/release', [jsonParser, checkProjAuth], (req, res) => {
     fs.mkdirSync(outputPath);
   }
 
-  unzipFile(zipFilePath, outputPath).then(() => {
+  return unzipFile(zipFilePath, outputPath);
+}
+
+/**
+ * release specified asset of specified project
+ */
+deploymentRouter.post('/release', [jsonParser, checkProjAuth], (req, res) => {
+  let { project, asset } = req.assetConfig;
+  releaseAsset(req.assetConfig).then(() => {
     let { username, projId, assetId } = req.body;
     let releaseLog = {
       operator: username,
@@ -192,6 +196,49 @@ deploymentRouter.post('/release', [jsonParser, checkProjAuth], (req, res) => {
     };
     project.releaseRef = assetId;
     db.set(`projects.${projId}`, project).write();
+    db.set(`assets.${asset.id}.isReleased`, true).write();
+    audit(projId, releaseLog);
+    res.json({
+      err: null
+    });
+  }, () => {
+    return res.json({
+      err: 'File not exist.'
+    });
+  }).catch((err) => {
+    return res.json({
+      err: err + ''
+    });
+  });
+});
+
+/**
+ * rollback
+ */
+deploymentRouter.post('/rollback', [jsonParser, checkProjAuth], (req, res) => {
+  let { project, asset } = req.assetConfig;
+  releaseAsset(req.assetConfig).then(() => {
+    let { username, projId, assetId, rollbackMark, prevAssetId } = req.body;
+    let releaseLog = {
+      operator: username,
+      version: asset.version,
+      note: asset.desc,
+      type: 'rollback'
+    };
+    let prevAssetConfig = Object.assign({}, db.get(`assets.${prevAssetId}`).value(), {
+      isReleased: false,
+      isRollback: true,
+      rollbackMark,
+      status: 'rollback'
+    });
+    let nextAssetConfig = Object.assign({}, asset, {
+      isReleased: true,
+      status: 'released'
+    });
+    project.releaseRef = assetId;
+    db.set(`projects.${projId}`, project).write();
+    db.set(`assets.${asset.id}`, nextAssetConfig).write();
+    db.set(`assets.${prevAssetId}`, prevAssetConfig).write();
     audit(projId, releaseLog);
     res.json({
       err: null
@@ -234,8 +281,31 @@ deploymentRouter.post('/del-project', [jsonParser, checkProjAuth], (req, res) =>
   // TODO: 删除记录，并且删除文件
   res.json({
     err: 'not yet.'
-  })
+  });
 });
+
+const clearAsset = (project) => {
+  return new Promise((resolve, reject) => {
+    if(!project) reject('project is required.');
+    let asset = [...objToArr(db.get("assets").value())];
+    let delAsset = asset.slice(maxAssetCount);
+    delAsset.forEach(item => {
+      let assetId = item.id;
+      let unlinkFilePath = path.join(zipAssetsStorePath, assetId + '.zip');
+      fs.unlink(unlinkFilePath, (err) => {
+        if(err) return reject(err);
+        let releaseLog = {
+          username: 'system',
+          type: 'systemDeleteAsset'
+        }
+        db.unset(`assets.${assetId}`).write();
+        db.set(`projects.${project.id}.assetsCount`, project.assetsCount - 1).write();
+        audit(project.id, releaseLog);
+        resolve();
+      });
+    });
+  })
+}
 
 /**
  * handle uploaded asset
@@ -257,14 +327,17 @@ deploymentRouter.post('/upload', upload.single('assetZip'), (req, res) => {
       isRollback: false,
       rollbackMark: '',
       founder
-    }
-    db.set(`assets.${assetId}`, nextAssetState).write();
-    db.set(`projects.${projId}.assetsCount`, currVersion).write();
+    };
     let releaseLog = {
       username: founder,
       type: 'createAsset'
-    }
+    };
+    db.set(`assets.${assetId}`, nextAssetState).write();
+    db.set(`projects.${projId}.assetsCount`, currVersion).write();
     audit(projId, releaseLog);
+    if(currVersion > maxAssetCount) {
+      clearAsset(targetProject);
+    }
     return res.json({
       err: null,
       data: nextAssetState
@@ -296,6 +369,30 @@ deploymentRouter.get('/assets', (req, res) => {
 });
 
 /**
+ * query assets
+ */
+deploymentRouter.post('/del-asset', [jsonParser, checkProjAuth], (req, res) => {
+  let { project } = req.assetConfig;
+  let { projId, assetId, username } = req.body;
+  let unlinkFilePath = path.join(zipAssetsStorePath, assetId + '.zip');
+  fs.unlink(unlinkFilePath, (err) => {
+    if(err) return res.json({
+      err: 'This file did not exist.'
+    });
+    let releaseLog = {
+      username,
+      type: 'deleteAsset'
+    }
+    db.unset(`assets.${assetId}`).write();
+    db.set(`projects.${projId}.assetsCount`, project.assetsCount - 1).write();
+    audit(projId, releaseLog);
+    res.json({
+      err: null
+    });
+  });
+});
+
+/**
  * audit log
  */
 deploymentRouter.get('/audit', (req, res) => {
@@ -307,16 +404,9 @@ deploymentRouter.get('/audit', (req, res) => {
   } else {
     res.json({
       err: null,
-      data: objToArr(getAudit(projId))
+      data: getAudit(projId)
     });
   }
-});
-
-/**
- * rollback
- */
-deploymentRouter.post('/rollback', jsonParser, (req, res) => {
-  let { projId, assetId, why,  } = req.body;
 });
 
 module.exports = deploymentRouter;

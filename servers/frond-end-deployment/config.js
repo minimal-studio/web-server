@@ -18,6 +18,9 @@ if(!fs.existsSync(dbStorePath)) {
   fse.writeJsonSync(auditdbStorePath, {});
 }
 
+// 最大的资源存放数量，默认 30 个
+const maxAssetCount = 30;
+
 const adapter = new FileSync(dbStorePath);
 const db = low(adapter);
 
@@ -37,6 +40,9 @@ module.exports = {
   dbStorePath,
   staticServerPath,
   zipAssetsStorePath,
+  maxAssetCount,
+  db,
+  adapter,
   getDeployPath: (projCode) => {
     if(!projCode) return console.log('need to pass projCode');
     return path.join(staticServerPath, projCode);
@@ -49,18 +55,6 @@ module.exports = {
     return {
       deployStorePath, assetDir, 
     }
-  },
-  db,
-  adapter,
-  wrapRes: (data, header) => {
-    header = header || {
-      err: false,
-      code: 0
-    };
-    return {
-      header,
-      data
-    };
   },
   audit: (projId, note) => {
     let operator = note.operator || note.username || '';
@@ -77,6 +71,6 @@ module.exports = {
     auditdb.get(`${projId}`).push(nextState).write();
   },
   getAudit: (projId) => {
-    return auditdb.get(`${projId}`).value();
+    return [...auditdb.get(`${projId}`).value()].reverse();
   }
 }
