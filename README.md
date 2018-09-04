@@ -1,4 +1,4 @@
-# Orion web server
+# uke web server
 
 -----
 
@@ -21,7 +21,7 @@
 ### 开发
 
 ```shell
-git clone https://github.com/SANGET/orion-web-server.git yourProjName
+git clone https://github.com/SANGET/uke-web-server.git yourProjName
 cd ./yourProjName
 npm run init
 npm start // 使用了 nodemon 动态重载机制，修改代码自动重载
@@ -52,4 +52,4 @@ TODO
 - 作为静态资源服务运行
 - 部署前后端分离的前端应用
 - 需要根据不同路由来指定对应应用程序模版
-- 配套使用 orion admin 管理后台
+- 配套使用 uke admin 管理后台
