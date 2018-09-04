@@ -54,7 +54,7 @@ app.use(publicRouter);
 // 最后处理所有错误
 if(process.env.NODE_ENV == 'production') app.use(handleError);
 
-app.listen(20000, (err) => {
+app.listen(mainServerPort, (err) => {
   if(err) return console.log(err);
   console.log(`main server started at port ` + mainServerPort);
 });
