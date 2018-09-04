@@ -32,7 +32,7 @@ yarn.lock
 public/posts/
 version.js
 web-server.log
-test-data.js
+# test-data.js
 f-e-deployment-store/
 assets/zips
 assets/public/Project1
