@@ -17,8 +17,7 @@
     "url": "git+https://github.com/SANGET/uke-web-server.git"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-es2015": "^6.24.1",
+    "@babel/preset-env": "^7.0.0",
     "debug": "^3.1.0",
     "mocha": "^5.2.0",
     "nodemon": "^1.18.3"
