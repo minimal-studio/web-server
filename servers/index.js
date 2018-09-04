@@ -7,6 +7,7 @@ let fs = require('fs');
 let path = require('path');
 
 // let dynamicRoute = require('../routers/dynamic-router');
+let { mainServerPort } = require('../config');
 let publicRouter = require('../routers/public-assets');
 // let processUpdater = require('../routers/process-updater');
 let handleError = require('../error-handle');
@@ -53,4 +54,7 @@ app.use(publicRouter);
 // 最后处理所有错误
 if(process.env.NODE_ENV == 'production') app.use(handleError);
 
-app.listen(3000);
+app.listen(20000, (err) => {
+  if(err) return console.log(err);
+  console.log(`main server started at port ` + mainServerPort);
+});
