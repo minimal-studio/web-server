@@ -6,7 +6,8 @@
   "scripts": {
     "babel": "babel-node ./servers/index.js --presets es2015",
     "start:normal": "node ./servers/index.js",
-    "init": "rm -Rf ./.git; git init; npm i",
+    "init": "git remote rename origin remote; git init; npm i",
+    "update": "git pull remote master",
     "start": "NODE_ENV=development nodemon --watch routers/ --watch servers/ --watch dynamic-routres/ --exec npm run start:normal",
     "restartServer": "NODE_ENV=production pm2 restart orion-web-server",
     "deploy": "NODE_ENV=production pm2 restart app.js --name 'orion-web-server'"

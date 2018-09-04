@@ -27,6 +27,14 @@ npm run init
 npm start // 使用了 nodemon 动态重载机制，修改代码自动重载
 ```
 
+### 更新
+
+通过 git pull 最新的系统模块，注意，可能会有冲突，慎用
+
+```shell
+npm run update
+```
+
 ### 部署
 
 TODO
