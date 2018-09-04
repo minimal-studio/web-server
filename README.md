@@ -21,7 +21,8 @@
 ### 开发
 
 ```shell
-git clone https://github.com/SANGET/orion-web-server.git
+git clone https://github.com/SANGET/orion-web-server.git yourProjName
+cd ./yourProjName
 npm run init
 npm start // 使用了 nodemon 动态重载机制，修改代码自动重载
 ```
