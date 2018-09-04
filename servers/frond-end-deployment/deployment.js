@@ -136,7 +136,7 @@ deploymentRouter.post('/project', jsonParser, (req, res) => {
   let isProjExist = !!db.get('projects').find({
     projCode
   }).value();
-  if(isProjExist) return res.json({err: 'project exist'});
+  if(isProjExist) return res.json({err: projCode + ' is exist'});
   if(!username || !projCode || !projName) return res.json({
     err: true,
     desc: 'username, projName, projCode are required.'
@@ -258,6 +258,7 @@ deploymentRouter.post('/rollback', [jsonParser, checkProjAuth], (req, res) => {
 deploymentRouter.put('/project', [jsonParser, checkProjAuth], (req, res) => {
   let { project } = req.assetConfig;
   let { projCode, projName, projDesc, webhook } = req.body;
+  console.log(webhook)
   let nextProj = Object.assign({}, project, {
     motifyDate: Date.now(),
     projCode, projName, projDesc, webhook
@@ -297,7 +298,7 @@ const clearAsset = (project) => {
           type: 'systemDeleteAsset'
         }
         db.unset(`assets.${assetId}`).write();
-        db.set(`projects.${project.id}.assetsCount`, project.assetsCount - 1).write();
+        db.update(`projects.${project.id}.assetsCount`, n => n - 1).write();
         audit(project.id, releaseLog);
         resolve();
       });
@@ -311,10 +312,10 @@ const clearAsset = (project) => {
 deploymentRouter.post('/upload', upload.single('assetZip'), (req, res) => {
   const { founder, projId } = req.body;
   let targetProject = db.get(`projects.${projId}`).value();
-  let { assetsCount } = targetProject;
+  let { assetNumb } = targetProject;
   if(targetProject.founder == founder || !!targetProject.collaborators[founder]) {
     let { desc } = req.body;
-    let currVersion = (+assetsCount || 0) + 1;
+    let currVersion = (+assetNumb || 0) + 1;
     let assetId = req.file.filename.split('.')[0];
     let nextAssetState = {
       belongto: projId,
@@ -331,7 +332,10 @@ deploymentRouter.post('/upload', upload.single('assetZip'), (req, res) => {
       type: 'createAsset'
     };
     db.set(`assets.${assetId}`, nextAssetState).write();
-    db.set(`projects.${projId}.assetsCount`, currVersion).write();
+    db
+      .update(`projects.${projId}.assetsCount`, n => (n || 0) + 1)
+      .update(`projects.${projId}.assetNumb`, n => (n || 0) + 1)
+      .write();
     audit(projId, releaseLog);
     if(currVersion > maxAssetCount) {
       clearAsset(targetProject);
@@ -382,7 +386,7 @@ deploymentRouter.post('/del-asset', [jsonParser, checkProjAuth], (req, res) => {
       type: 'deleteAsset'
     }
     db.unset(`assets.${assetId}`).write();
-    db.set(`projects.${projId}.assetsCount`, project.assetsCount - 1).write();
+    db.update(`projects.${projId}.assetsCount`, n => n - 1).write();
     audit(projId, releaseLog);
     res.json({
       err: null
