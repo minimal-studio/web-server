@@ -1,24 +1,23 @@
 {
-  "name": "orion-web-server",
+  "name": "uke-web-server",
   "version": "0.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "babel": "babel-node ./servers/index.js --presets es2015",
     "start:normal": "node ./servers/index.js",
-    "init": "git remote rename origin remote; git init; npm i",
+    "init": "git remote remove origin; git init; npm i",
     "update": "git pull remote master",
     "start": "NODE_ENV=development nodemon --watch routers/ --watch servers/ --watch dynamic-routres/ --exec npm run start:normal",
-    "restartServer": "NODE_ENV=production pm2 restart orion-web-server",
-    "deploy": "NODE_ENV=production pm2 restart app.js --name 'orion-web-server'"
+    "restartServer": "NODE_ENV=production pm2 restart uke-web-server",
+    "deploy": "NODE_ENV=production pm2 restart app.js --name 'uke-web-server'"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SANGET/orion-web-server.git"
+    "url": "git+https://github.com/SANGET/uke-web-server.git"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-es2015": "^6.24.1",
+    "@babel/preset-env": "^7.0.0",
     "debug": "^3.1.0",
     "mocha": "^5.2.0",
     "nodemon": "^1.18.3"
@@ -26,9 +25,9 @@
   "author": "Alex",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/SANGET/orion-web-server/issues"
+    "url": "https://github.com/SANGET/uke-web-server/issues"
   },
-  "homepage": "https://github.com/SANGET/orion-web-server#readme",
+  "homepage": "https://github.com/SANGET/uke-web-server#readme",
   "dependencies": {
     "body-parser": "^1.18.3",
     "compression": "^1.7.3",

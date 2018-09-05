@@ -1,4 +1,11 @@
-# Orion web server
+# uke web server
+
+-----
+
+## 依赖
+
+- node
+- babel 7
 
 -----
 
@@ -56,4 +63,4 @@ TODO
 - 作为静态资源服务运行
 - 部署前后端分离的前端应用
 - 需要根据不同路由来指定对应应用程序模版
-- 配套使用 orion admin 管理后台
+- 配套使用 uke admin 管理后台

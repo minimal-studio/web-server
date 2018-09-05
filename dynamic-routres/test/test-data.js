@@ -1,12 +1,12 @@
 let testData = [
   {
-    name: 'orion admin web',
+    name: 'uke admin web',
   },
   {
     name: 'Ukelli ui',
   },
   {
-    name: 'orion request',
+    name: 'uke request',
   }
 ];
 
