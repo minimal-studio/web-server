@@ -310,6 +310,7 @@ const clearAsset = (project) => {
  * handle uploaded asset
  */
 deploymentRouter.post('/upload', upload.single('assetZip'), (req, res) => {
+  if(!req.file) return res.json({err: 'no upload files'});
   const { founder, projId } = req.body;
   let targetProject = db.get(`projects.${projId}`).value();
   let { assetNumb } = targetProject;
