@@ -16,23 +16,27 @@
 
 -----
 
-## 使用
+## 开始使用
 
-### 开发
+### 自动构建
+
+安装构建工具 uke-cli
+
+```shell
+npm i uke-cli -g
+```
+
+### 更新
+
+TODO
+
+### 手动使用
 
 ```shell
 git clone https://github.com/SANGET/orion-web-server.git yourProjName
 cd ./yourProjName
 npm run init
 npm start // 使用了 nodemon 动态重载机制，修改代码自动重载
-```
-
-### 更新
-
-通过 git pull 最新的系统模块，注意，可能会有冲突，慎用
-
-```shell
-npm run update
 ```
 
 ### 部署
