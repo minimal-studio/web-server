@@ -28,12 +28,15 @@ pathInfos.filter(dirname => dirname.indexOf(ignoreFirld) == -1).forEach((dirname
   let currServer = require('./' + dirname);
   let serverPath = currServer.alias || dirname;
   let startSubServer = currServer.start;
+  let isForRootRouter = currServer.isForRootRouter;
   if(startSubServer) {
     try {
       startSubServer();
     } catch(e) {
       console.log(e)
     }
+  } else if(isForRootRouter) {
+    app.use(currServer);
   } else {
     app.use(`/${serverPath}`, currServer);
   }

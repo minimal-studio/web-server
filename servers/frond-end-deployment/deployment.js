@@ -1,5 +1,5 @@
 const express = require('express');
-const bodyParser = require('body-parser')
+const bodyParser = require('body-parser');
 const uuidv3 = require('uuid/v3');
 const uuidv1 = require('uuid/v1');
 const path  = require('path');
