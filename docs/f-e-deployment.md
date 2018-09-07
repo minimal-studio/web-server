@@ -30,7 +30,7 @@ TODO
 存储结构
 
 ```js
-// store.js
+// store.json
 {
   version: 1,
   projects: {
@@ -50,8 +50,10 @@ TODO
           updatable: true,
           deletable: true,
           releasable: true,
+          active: true,
         },
       },
+      collaboratorApplies: [username],
       deployedVersion: 1,
     }
   },
@@ -71,7 +73,7 @@ TODO
 ```
 
 ```js
-// audit.js
+// audit.json
 {
   [projId]: [{
     operator: 'alex',

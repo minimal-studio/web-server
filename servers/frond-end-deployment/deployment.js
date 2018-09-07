@@ -6,6 +6,7 @@ const path  = require('path');
 const multer  = require('multer');
 // const fse  = require('fs-extra');
 const fs  = require('fs');
+const _ = require('lodash');
 
 const { db, getDeployPath, zipAssetsStorePath, audit, getAudit, maxAssetCount } = require('./config');
 const unzipFile = require('./unzip');
@@ -18,16 +19,14 @@ const urlencodedParser = bodyParser.urlencoded({ extended: false });
 /**
  * convert obj to array
  */
-function objToArr(obj, deleteFields, limit = 30) {
+function objToArr(obj, filter, limit = 30) {
+  let hasFilter = _.isFunction(filter);
   let result = [];
   let taked = 0;
-  deleteFields = Array.isArray(deleteFields) ? deleteFields : [deleteFields];
   for (const key in obj) {
     if(taked == limit) return;
     let item = Object.assign({}, obj[key]);
-    deleteFields.forEach(delF => {
-      if(item.hasOwnProperty(delF)) delete item[delF];
-    });
+    hasFilter ? item = filter({...item}) || item : null;
     result.push(item);
     taked++;
   }
@@ -75,7 +74,8 @@ const checkProjAuth = (req, res, next) => {
   next();
 }
 
-function findAll(obj, findParams) {
+function findAll(obj, findParams, filter) {
+  let hasFilter = _.isFunction(filter);
   let res = {};
   for (const key in obj) {
     const item = obj[key];
@@ -83,6 +83,7 @@ function findAll(obj, findParams) {
       const targetVal = findParams[targetKey];
       if(typeof targetVal == 'function') {
         if(targetVal(item)) {
+          hasFilter ? item = filter(item) || item : null;
           res[key] = item;
         }
       } else if(item[targetKey] == targetVal) {
@@ -107,6 +108,9 @@ deploymentRouter.get('/project', (req, res) => {
     let projectData = {};
     if(!!range) {
       switch (range) {
+        case 'all':
+          projectData = projectObj;
+          break;
         case 'me':
           projectData = findAll(projectObj, {founder: user});
           break;
@@ -114,9 +118,6 @@ deploymentRouter.get('/project', (req, res) => {
           projectData = findAll(projectObj, {collaborators: (o) => {
             return o.hasOwnProperty(user);
           }});
-          break;
-        case 'all':
-          projectData = projectObj;
           break;
       }
     }
@@ -153,6 +154,7 @@ deploymentRouter.post('/project', jsonParser, (req, res) => {
     webhook,
     founder: username,
     collaborators: {},
+    collaboratorApplies: [],
   };
   
   db.set(`projects.${createProjId}`, newProj).write();
@@ -278,6 +280,32 @@ deploymentRouter.post('/del-project', [jsonParser, checkProjAuth], (req, res) =>
   let { project, asset } = req.assetConfig;
   // console.log(project, asset)
   // TODO: 删除记录，并且删除文件
+  res.json({
+    err: 'not yet.'
+  });
+});
+
+/**
+ * 加入协作
+ */
+deploymentRouter.post('/join', [jsonParser], (req, res) => {
+  let { projId, username } = req.body;
+  db.get(`projects.${projId}.collaboratorApplies`).push(username).write();
+  res.json({
+    err: 'not yet.'
+  });
+});
+
+/**
+ * 加入协作
+ */
+deploymentRouter.post('/approve', [jsonParser, checkProjAuth], (req, res) => {
+  let { project, asset } = req.assetConfig;
+  let { projId, applicant } = req.body;
+  if(!applicant) return res.json({
+    err: 'need to pass applicant'
+  });
+  db.get(`projects.${projId}.collaboratorApplies`).remove('applicant').write();
   res.json({
     err: 'not yet.'
   });
