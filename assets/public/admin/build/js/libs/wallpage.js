@@ -1,1 +1,0 @@
-window.ORIGINAL_WALLPAGES = ["001.jpg","002.jpg","003.jpg","004.jpg","005.jpg","bet_bg.jpg"]

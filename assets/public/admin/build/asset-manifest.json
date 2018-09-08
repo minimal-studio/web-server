@@ -1,6 +1,0 @@
-{
-  "vendor_app.js": "./static/js/vendor_app.chunk.js",
-  "main.js": "./static/js/main.bundle.js",
-  "platform-main.js": "./static/js/platform-main.bundle.js",
-  "index.html": "./index.html"
-}
