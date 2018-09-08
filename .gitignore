@@ -36,6 +36,6 @@ web-server.log
 f-e-deployment-store/
 assets/zips
 assets/public/Project1
-assets/_admin
+assets/_admin/*
 
 _none
