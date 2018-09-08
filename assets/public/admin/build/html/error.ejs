@@ -1,0 +1,550 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<!-- <link rel="stylesheet" type="text/css" href="css/login.css"> -->
+	<title>系统升级</title>
+	<meta name="renderer" content="webkit">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<!-- <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script> -->
+	<style>
+		/* CSS Document */
+
+		@charset "utf-8";
+		/* html 4.0 & html 5 样式清零*/
+
+		html,
+		body,
+		div,
+		span,
+		applet,
+		object,
+		iframe,
+		h1,
+		h2,
+		h3,
+		h4,
+		h5,
+		h6,
+		p,
+		blockquote,
+		pre,
+		a,
+		abbr,
+		acronym,
+		address,
+		big,
+		cite,
+		code,
+		del,
+		dfn,
+		em,
+		font,
+		img,
+		ins,
+		kbd,
+		q,
+		s,
+		samp,
+		small,
+		strike,
+		strong,
+		sub,
+		sup,
+		tt,
+		var,
+		b,
+		u,
+		i,
+		center,
+		dl,
+		dt,
+		dd,
+		ol,
+		ul,
+		li,
+		fieldset,
+		form,
+		label,
+		legend,
+		table,
+		caption,
+		tbody,
+		tfoot,
+		thead,
+		tr,
+		th,
+		td,
+		article,
+		aside,
+		canvas,
+		details,
+		embed,
+		figure,
+		figcaption,
+		footer,
+		header,
+		hgroup,
+		menu,
+		nav,
+		output,
+		ruby,
+		section,
+		summary,
+		time,
+		mark,
+		audio,
+		video {
+			margin: 0;
+			padding: 0;
+			outline: 0;
+			font-size: 100%;
+			/*inherit*/
+			/*   vertical-align: baseline;解决表格合并问题*/
+			background: transparent;
+		}
+
+		article,
+		aside,
+		details,
+		figcaption,
+		figure,
+		footer,
+		header,
+		hgroup,
+		menu,
+		nav,
+		section {
+			display: block;
+		}
+
+		body {
+			line-height: 1;
+			font-size: 12px;
+		}
+
+		body,
+		html {
+			height: 100%;
+		}
+
+		ol,
+		ul {
+			list-style: none;
+		}
+
+		blockquote,
+		q {
+			quotes: none;
+		}
+
+		blockquote:before,
+		blockquote:after,
+		q:before,
+		q:after {
+			content: '';
+			content: none;
+		}
+		/* remember to define focus styles! */
+
+		 :focus {
+			outline: 0;
+		}
+		/* remember to highlight inserts somehow! */
+
+		ins {
+			text-decoration: none;
+		}
+
+		del {
+			text-decoration: line-through;
+		}
+		/* tables still need 'cellspacing="0"' in the markup */
+
+		table {
+			border-collapse: collapse;
+			border-spacing: 0;
+		}
+
+		button {
+			border: 0px;
+			cursor: pointer;
+		}
+
+		img {
+			border: 0px;
+			max-width: 100%;
+		}
+
+		a {
+			cursor: pointer;
+			margin: 0;
+			padding: 0;
+			font-size: 100%;
+			vertical-align: baseline;
+			background: transparent;
+			text-decoration: none;
+			cursor: pointer;
+		}
+
+		input,
+		select,
+		input[type="checkbox"],
+		input[type="radio"] {
+			vertical-align: middle;
+			padding: 0px;
+		}
+
+		input[type="button"],
+		input[type="reset"],
+		input[type="submit"],
+		button {
+			cursor: pointer;
+		}
+
+		input::-ms-clear,
+		input::-ms-reveal {
+			display: none;
+		}
+		/*ie9 10以上 input框输入时不带叉*/
+
+		em,
+		i {
+			font-style: italic;
+		}
+
+		strong,
+		b {
+			font-weight: bold;
+		}
+		/*common
+      ------------------------------------------ */
+
+		body {
+			font-family: Arial, Microsoft Yahei, "微软雅黑", serif;
+			color: #fff;
+			background: #142e66;
+			background: -moz-linear-gradient(top, #142e66 0%, #2d77b4 100%);
+			/* FF3.6+ */
+			background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #142e66), color-stop(100%, #2d77b4));
+			/* Chrome,Safari4+ */
+			background: -webkit-linear-gradient(top, #142e66 0%, #2d77b4 100%);
+			/* Chrome10+,Safari5.1+ */
+			background: -o-linear-gradient(top, #142e66 0%, #2d77b4 100%);
+			/* Opera 11.10+ */
+			background: -ms-linear-gradient(top, #142e66 0%, #2d77b4 100%);
+			/* IE10+ */
+			background: linear-gradient(top, #142e66 0%, #2d77b4 100%);
+			/* W3C */
+		}
+
+		.login {
+			text-align: center;
+		}
+
+		.login .header {
+			text-align: left;
+		}
+
+		.login .header img {
+			position: relative;
+			top: 30px;
+			left: 30px;
+		}
+
+		.login h1,
+		.login h2 {
+			display: block;
+		}
+
+		.login h1 {
+			font-size: 60px;
+			height: 68px;
+			line-height: 68px;
+			/*margin-bottom: 20px;*/
+		}
+
+		.login h2 {
+			font-size: 34px;
+			height: 36px;
+			line-height: 36px;
+			font-weight: normal;
+			margin-bottom: 20px;
+		}
+
+		.login .content {
+			/*margin-top: 10%;*/
+			/*position: relative;
+			top: 10%;*/
+		}
+
+		.login .box_border {
+			border: 6px solid rgba(0, 0, 0, 0.1);
+			margin: 0 auto;
+			text-align: left;
+			/*width: 570px;*/
+			min-width: 400px;
+			max-width: 600px;
+			width: 40%;
+			border-radius: 8px;
+			-moz-border-radius: 8px;
+			-webkit-border-radius: 8px;
+			-ms-border-radius: 8px;
+			-o-border-radius: 8px;
+			overflow: hidden;
+			margin-bottom: 60px;
+		}
+
+		.login .box {
+			background: rgba(255, 255, 255, 0.2);
+			border-radius: 6px;
+			-moz-border-radius: 6px;
+			-webkit-border-radius: 6px;
+			-ms-border-radius: 6px;
+			-o-border-radius: 6px;
+			padding: 50px 20px 40px 20px;
+		}
+
+		.login .content p {
+			font-size: 14px;
+			line-height: 30px;
+		}
+
+		a {
+			color: #fff;
+			transition: all 0.3s ease-in-out;
+		}
+
+		a:hover {
+			/*text-decoration: none;*/
+			/*color: #fff;*/
+		}
+		/*icon & btn*/
+
+		.icon,
+		.btn {
+			display: inline-block;
+		}
+
+		.icon {
+			vertical-align: top;
+			background-repeat: no-repeat;
+			background-position: center center;
+		}
+
+		.imobile {
+			background-image: url(../images/mobile.png);
+		}
+
+		.ipc {
+			background-image: url(../images/pc.png);
+		}
+
+		.itrangle {
+			width: 0px;
+			height: 0px;
+			display: block;
+			border-style: solid;
+			border-width: 0px 10px 10px 10px;
+			border-color: transparent transparent rgba(255, 255, 255, 0.1) transparent;
+			position: absolute;
+			top: -10px;
+			left: 62px;
+		}
+		/*btn*/
+
+		.btn {
+			vertical-align: top;
+			text-align: center;
+			display: inline-block;
+		}
+
+		.btn_white_border {
+			font-size: 14px;
+			padding: 0px 30px;
+			height: 30px;
+			line-height: 30px;
+			border: 1px solid #fff;
+			color: #fff;
+			background: transparent;
+			border-radius: 5px;
+			-moz-border-radius: 5px;
+			-webkit-border-radius: 5px;
+			-o-border-radius: 5px;
+			-ms-border-radius: 5px;
+		}
+
+		.btn_white_border:hover {
+			background: rgba(255, 255, 255, 0.4);
+			color: #fff;
+		}
+
+		.login .download {
+			margin-top: 60px;
+			position: relative;
+			display: inline-block;
+			height: 280px;
+			width: 800px;
+			margin: 0 auto;
+		}
+
+		.login .download>a {
+			display: inline-block;
+			with: 100px;
+			height: 116px;
+			margin: 0px 25px;
+		}
+
+		.login .download span {
+			display: block;
+			margin-top: 20px;
+		}
+
+		.login .download .icon {
+			width: 44px;
+			height: 50px;
+			display: block;
+			margin: 0 auto;
+		}
+
+		.popup {
+			position: absolute;
+			z-index: 10;
+		}
+
+		.rand_popup {
+			width: 290px;
+			top: 120px;
+			left: 50%;
+			margin-left: -144px;
+			background: rgba(255, 255, 255, 0.1);
+			padding: 10px;
+			border-radius: 5px;
+			-moz-border-radius: 5px;
+			-webkit-border-radius: 5px;
+			-o-border-radius: 5px;
+			-ms-border-radius: 5px;
+			display: none;
+		}
+
+		.rand_popup .right div {
+			display: block;
+			width: 160px;
+			font-size: 14px;
+			text-align: left;
+		}
+
+		.rand_popup .right .title {
+			font-size: 16px;
+			text-align: center;
+			margin-bottom: 8px;
+		}
+
+		.rand_popup img {
+			float: left;
+			width: 120px;
+			margin-right: 10px;
+		}
+
+		/*.rand_popup a:hover {
+			text-decoration: underline;
+		}*/
+		/*footer*/
+
+		.footer {
+			position: fixed;
+			width: 100%;
+			left: 0px;
+			bottom: 0px;
+			height: 60px;
+			line-height: 60px;
+			overflow: hidden;
+			z-index: 2;
+			text-align: center;
+			color: #fff;
+		}
+
+		.footer p {
+			text-align: center;
+			font-size: 12px;
+			line-height: 60px;
+			color: #fff;
+		}
+
+		.right {
+			float: right;
+		}
+
+		.left {
+			float: left;
+		}
+
+		.margin_b1 {
+			margin-bottom: 5px;
+		}
+    .email:after {
+      content: '点击联系'
+    }
+    .email:hover {
+    	text-decoration: underline;
+    }
+		.main-content {
+			font-size: 16px !important;
+		}
+	</style>
+	<script>
+		// $(function() {
+		//     $(".dmobile").mouseenter(function() {
+		//         $(".rand_popup").fadeIn();
+		//
+		//     })
+		//     $(".download").mouseleave(function() {
+		//         $(".rand_popup").fadeOut();
+		//     })
+		//
+		// })
+	</script>
+</head>
+
+<body>
+	<div class="login">
+		<div class="header">
+		</div>
+		<div class="content">
+			<h1>System Upgrading</h1>
+			<h2>系统正在升级维护</h2>
+			<div class="box_border">
+				<div class="box">
+					<p class="main-content" style="text-align: left">Dear customer</p>
+					<p class="main-content">due to your regional restrictions on the page, you can not open your page very sorry for the inconvenience if there is any doubt, you can get in touch with us.</p>
+					<p class="main-content">Contact Us by Customer System <a href="http://kf1.learnsaas.com/chat/chatClient/chatbox.jsp?companyID=861942&configID=66977&jid=3381946439" class="email"></a></p>
+					<br/>
+					<br/>
+					<br/>
+					<p>尊敬的客户</p>
+					<p>我们正在进行系统升级, 请稍后再试</p>
+					<p>若有任何疑问，可以通过以下方式和我们取得联系。</p>
+					<p>联系客服 <a href="http://kf1.learnsaas.com/chat/chatClient/chatbox.jsp?companyID=861942&configID=66977&jid=3381946439" class="email"></a></p>
+				</div>
+			</div>
+			<!-- <div class="download"><a href="javascript:void(0);" class="dmobile"><em class="icon imobile"></em><span class="btn btn_white_border">下载</span> </a>
+                <div class="popup rand_popup">
+                    <div class="right">
+                        <em class="itrangle"></em>
+                        <div class="title">手机下注</div>
+                        <div class="margin_b1">扫描左侧二维码下载V6App或直接浏览器下注</div>
+                        <div class="margin_b1">您也在手机浏览器输入以下网址</div>
+                        <div><a href="http://www.01ssc.net">www.01ssc.net</a></div>
+                        <div><a href="http://www.68ssc.net">www.68ssc.net</a></div>
+                    </div>
+                    <img src="images/rand.png" /></div>
+                <a href="#"><em class="icon ipc"></em><span class="btn btn_white_border">下载</span></a> </div> -->
+		</div>
+		<!-- <div class="footer">
+			<p>Copyright@</p>
+		</div> -->
+	</div>
+</body>
+
+</html>

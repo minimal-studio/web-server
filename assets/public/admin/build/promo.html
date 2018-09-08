@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <!-- <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script> -->
+  <link rel="stylesheet" href="/css/loading.css">
+  <link rel="stylesheet" href="https://vg06.net/static/css/main.style.css">
+  <link rel="stylesheet" href="https://vg06.net/static/css/ukelli-ui.style.css">
+  <style>
+    body {
+      background-color: #2c2e42;
+    }
+
+    [fill] {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      bottom: 0;
+    }
+
+    #coverImage {
+      background-repeat: no-repeat;
+      background-origin: content-box;
+      background-clip: content-box;
+      background-position: 50% 50%;
+      background-attachment: fixed;
+      background-size: cover;
+      background-color: #317da1;
+    }
+
+    #coverImageContainer {
+      z-index: -1;
+      position: fixed;
+      overflow: hidden;
+    }
+
+    #login-form .login-field .form-group .control-label {
+      width: 80px !important;
+      left: -80px !important;
+    }
+
+    .login-field {
+      padding-bottom: 20px !important;
+      height: auto !important;
+    }
+
+    #login-form .login-field .form-group .form-tip {
+      display: block !important;
+    }
+
+    #login-form {
+      opacity: 1;
+      margin: 0 auto;
+      /*margin-top: 20%;*/
+    }
+
+    #siteTitle {
+      font-size: 16px;
+    }
+
+    .login-panel-container {
+    }
+    .bg-container {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      bottom: 0;
+      z-index: -1;
+      background-size: cover;
+      background-image: url(https://v6tp.edumf.cn/images/wallpager/002.jpg);
+      filter: blur(10px);
+    }
+  </style>
+</head>
+
+<body>
+  <script src="/js/loading.js"></script>
+  <div class="login-panel-container">
+    <div class="loin-panel-content">
+      <img src="https://v6tp.edumf.cn/images/logo/logo.main.png" class="login-panel-logo" alt="">
+      <div id="login-form" class="con-card">
+        <header>
+          <div style="padding: 20px 10px 0;" id="siteTitle">注册</div>
+        </header>
+        <div class="login-field">
+          <div class="horizontal-form">
+            <div class="form-group">
+              <label for="" class="control-label">登陆账号</label>
+              <div class="icon-input normal show-title">
+                <input type="text" placeholader="账号名" id="username" class="form-control" placeholder="注册账号">
+                <span class="title"><span>6-16个字符</span></span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="" class="control-label">登陆密码</label>
+              <div class="icon-input normal show-title">
+                <input type="text" disabled value="a123456" class="form-control">
+                <span class="title">登陆后需要修改</span>
+              </div>
+            </div>
+          </div>
+          <div class="text-center">
+            <bottom class="btn flat login-btn theme" id="registerBtn" onclick="registe()">注册</bottom>
+            <div class="tip" id="resTip"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="copyright"><div class="lot-license bg1"><div class="container-center"><img src="//v6tp.edumf.cn/images/index/footer-approve.png" alt=""><span class="flex"></span><div><span>建议使用的浏览器体验 </span><img src="//v6tp.edumf.cn/images/index/browser.png" alt=""></div></div></div><div class="content bg2"><div class="container-center"><div class="block-item idx-1 download-block"><span class="item-title">迅游娱乐</span><span class="item-title">信誉保证</span><a href="https://www.9street.net/" class="text item-title" target="_blank">技术支持 九街工作室「THE 9STREET」</a><div class="download-container"><div class="download-content"><div class="title">下载中心</div><div class="hide-container"><div class="title">手机APP</div><div class="hide-content"><div class="panel-warm"><h4 class="title">APP 安装步骤, iOS 和 Android 通用</h4><div class="item">1. 使用手机打开 “浏览器”, 输入 vg06.net 后确定访问</div><div class="item">2. <span>请使用 <a class="link-btn" target="_blank" href="http://android.myapp.com/myapp/detail.htm?apkName=me.scan.android.client">QRCode扫描器</a> 扫描二维码进行下载</span></div><div class="item">3. iOS 11 以上的朋友可以直接使用相机应用扫描</div><div class="item">4. 安装打开即可使用, 感受流畅的移动投注体验</div></div><div class="qrcode"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGcAAABnCAIAAACSI8uuAAAB+klEQVR4nOzcQW7jMAxG4brI/a/sboUCTshH0laA9y0zmdr9wRKyJOt1nuePkn6fvoGvZGqEqRGmRpgaYWqEqRGmRpga8Xr/z8dxtF8y8jSyXnf9fuTzLm/u01ojTI0wNeJDX1tVZkeyfadyrRvu01ojTI0wNSLR11aRv/+JcVm2Z3Xd5z/WGmFqhKkRsK91ueopV59f9bubWWuEqRGmRjzc11Z3zp0VWWuEqRGmRsC+Nj1Wuupl2esO3ae1RpgaYWpEoq9NjJsq656RZ9Uh1hphaoSpER/62m47xLPzcUOsNcLUCFMjGvav3TkXNr0OG2StEaZGmBqRGK917UHL9pRKD4rsFwFzedYaYWqEqRGJ8Vqkp3TNeWX7afY7xedWa40wNcLUiIZ1g679tJX+1fXzg6w1wtQIUyPgusHaIyb2nW24Brqy1ghTI0yNGNy/NvEe1QTQi601wtQIUyM2Pc8ju+aQXQco/l7WGmFqhKkRm57nkZ2nq6wbgLGhtUaYGmFqxMPneWT/b2V9tuvdLGsNMjXC1IhNz/NYVd61yq45OF4bZGqEqREP97WuMdSda6/WGmRqhKkRG53nEXlmrKwJOL/2MFMjTI14+DyPrMjz5tX3IxyvDTI1wtSIY7cTO76CtUaYGmFqhKkRpkaYGmFqhKkRfwEAAP//DUT/3N4phy4AAAAASUVORK5CYII="></div></div></div><div class="hide-container"><div class="title">手机网页版</div><div class="hide-content"><div class="panel-warm"><h4 class="title">访问手机网页版</h4><div class="item">1. 使用手机打开 “浏览器”, 输入 vg06.net 后确定访问</div><div class="item">2. 选择 “手机网页版浏览”</div></div><div class="qrcode"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGcAAABnCAIAAACSI8uuAAAB+klEQVR4nOzcQW7jMAxG4brI/a/sboUCTshH0laA9y0zmdr9wRKyJOt1nuePkn6fvoGvZGqEqRGmRpgaYWqEqRGmRpga8Xr/z8dxtF8y8jSyXnf9fuTzLm/u01ojTI0wNeJDX1tVZkeyfadyrRvu01ojTI0wNSLR11aRv/+JcVm2Z3Xd5z/WGmFqhKkRsK91ueopV59f9bubWWuEqRGmRjzc11Z3zp0VWWuEqRGmRsC+Nj1Wuupl2esO3ae1RpgaYWpEoq9NjJsq656RZ9Uh1hphaoSpER/62m47xLPzcUOsNcLUCFMjGvav3TkXNr0OG2StEaZGmBqRGK917UHL9pRKD4rsFwFzedYaYWqEqRGJ8Vqkp3TNeWX7afY7xedWa40wNcLUiIZ1g679tJX+1fXzg6w1wtQIUyPgusHaIyb2nW24Brqy1ghTI0yNGNy/NvEe1QTQi601wtQIUyM2Pc8ju+aQXQco/l7WGmFqhKkRm57nkZ2nq6wbgLGhtUaYGmFqxMPneWT/b2V9tuvdLGsNMjXC1IhNz/NYVd61yq45OF4bZGqEqREP97WuMdSda6/WGmRqhKkRG53nEXlmrKwJOL/2MFMjTI14+DyPrMjz5tX3IxyvDTI1wtSIY7cTO76CtUaYGmFqhKkRpkaYGmFqhKkRfwEAAP//DUT/3N4phy4AAAAASUVORK5CYII="></div></div></div><div class="hide-container"><div class="title">PC网页版</div><div class="hide-content"><div class="panel-warm"><h4 class="title">PC网页版</h4><div class="item">1. 我们采用了全站 HTTPS 通讯加密架构, 保障您的隐私、资金安全</div><div class="item">2. 我们提供了多套游戏模式模板，让您玩的尽兴</div></div></div></div><div class="hide-container"><div class="title">客户端</div><div class="hide-content"><div class="download-icons"><a class="download-item" href="http://download.edumf.cn/store/v6/client/client/win/win_client.zip" target="_blank"><i class="fa fa-031"></i><span class="title">PC 客户端</span></a><a class="download-item" href="http://download.edumf.cn/store/v6/client/client/mac/mac_client.dmg" target="_blank"><i class="fa fa-032"></i><span class="title">macOS 客户端</span></a><a class="download-item" href="https://download.edumf.cn/store/v6/client/gameplan/download/gameplan.zip" target="_blank"><i class="fa fa-083"></i><span class="title">挂机神器</span></a></div></div></div></div></div></div><div class="block-item idx-3"><div class="text"><div>© 2017 - 2018 迅游娱乐 <span class="light-text">菲律宾 PAGCOR 博彩牌照</span></div><div>迅游娱乐郑重提示: 彩票有风险，投注需谨慎，不向未满 18 岁的青少年出售彩票</div></div></div></div></div></div>
+    <div class="bg-container"></div>
+  </div>
+  <script>
+    Object.assign(window, {
+      __none: [75, 79, 75, 80, 79, 81, 79, 88],
+      getGateUrlFunc: (function() {
+        var nodes = {
+          gateNodes: ["https://gate.va04.net:37779"],
+          httpsNodes: ["https://gate.va04.net:37779"]
+        };
+        window.ORIGINAL_GATE_URL = /https/.test(document.location.protocol) ? nodes.httpsNodes : nodes.gateNodes;
+      })(window),
+      ORIGINAL_RESOURCE_URL: "//hh-images.b0.upaiyun.com",
+      SCRIPT_CND_URL: "",
+      PLATFORM: "hh2.0",
+      DOMAIN_COLL: ["https://gbak.01ssc.net"],
+      ORIGINAL_WALLPAGES: [{
+        "Full": "full.png",
+        "Thumb": "thumb.png"
+      }]
+    });
+  </script>
+  <!-- <script src="https://gbak.01ssc.net/static/js/basicHelper.js"></script> -->
+  <script>
+    var processObj = {};
+    if (window.SetLoadingDOM) processObj = window.SetLoadingDOM();
+    window.LoadScript('https://vg06.net/static/js/basicHelper.js', function() {
+      // window.GATE_URL = G_F_GetRandomURL() + '/x';
+      setTimeout(function() {
+        processObj.done();
+      }, 500);
+    });
+    document.querySelector('#siteTitle').innerHTML = (window.WebsiteTitle || '') + '会员注册'
+
+    function registe() {
+      var username = document.querySelector('#username').value;
+      var postData = {
+        Header: {
+          Platform: 'v6',
+          Compress: 0,
+          Device: "browser",
+          UserName: username,
+          SessId: '1',
+          Method: 'promo_register'
+        },
+        Data: {
+          NewUserName: username,
+          ParentPromoCode: window.location.search.replace('?c=', '')
+        }
+      };
+      window.onRequest.gameGate(postData, function(result) {
+        var tipCon = document.querySelector('#resTip');
+        var isSuccess = result.Header.ErrCode.Code == '0';
+        var desc = result.Header.ErrCode.Desc;
+        tipCon.innerHTML = desc + (isSuccess ? ', 2秒后自动跳转到游戏页面.' : '');
+        tipCon.classList.add(isSuccess ? 'success' : 'error');
+        if (isSuccess) {
+          setTimeout(function() {
+            window.location.href = 'http://v6yule.com';
+          }, 1000);
+        }
+      })
+    }
+  </script>
+  <script>
+    /**
+     * 压缩过的代码
+     */
+    // eval(function(p,a,c,k,e,d){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--){d[e(c)]=k[c]||e(c)}k=[function(e){return d[e]}];e=function(){return'\\w+'};c=1};while(c--){if(k[c]){p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c])}}return p}('4.w(\'/v/f/u.f\',7(){4.z=C()+\'/x\'});7 B(){3 6=h.g(\'#6\').A;3 e={8:{t:\'s\',m:0,k:"j",l:6,n:\'1\',r:\'q\'},p:{o:6,E:4.i.U.V(\'?c=\',\'\')}};4.Q.R(e,7(9){3 a=h.g(\'#O\');3 5=9.8.b.H==\'0\';3 d=9.8.b.J;a.M=d+(5?\', 2秒后自动跳转到游戏页面.\':\'\');a.N.K(5?\'L\':\'I\');F(5){G(7(){4.i.P=\'S://D.y\'},T)}})}',58,58,'|||var|window|isSuccess|username|function|Header|result|tipCon|ErrCode||desc|postData|js|querySelector|document|location|browser|Device|UserName|Compress|SessId|NewUserName|Data|promo_register|Method|v6|Platform|basicHelper|static|LoadScript||com|GATE_URL|value|registe|G_F_GetRandomURL|v6yule|ParentPromoCode|if|setTimeout|Code|error|Desc|add|success|innerHTML|classList|resTip|href|onRequest|gameGate|http|1000|search|replace'.split('|'),0,{}))
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <title>网站连接速度测试</title>
+  <link rel="stylesheet" href="https://vg00.net/static/css/main.style.css">
+  <link rel="stylesheet" href="https://vg00.net/css/loading.css">
+	<meta name="renderer" content="webkit">
+  <style>
+    #Main {
+      position: relative;
+      z-index: 101;
+    }
+    .loading-logo {
+      top: 50px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loadingBgPart"></div>
+  <img class="loading-logo" src="https://vg00.net/images/logo/logo.main.png" alt="">
+  <div id="Main"></div>
+  </div>
+  <script>
+    window.LoadScript = function(srcouce, callback) {
+      var script = document.createElement('script');
+      script.type = 'text/javascript';
+      document.body.appendChild(script);
+      script.src = (!!window.SCRIPT_CND_URL ? window.SCRIPT_CND_URL : '') + srcouce;
+      script.onload = function() {
+        if (typeof callback === 'function') callback();
+      };
+    }
+    window.LoadLink = function(srcouce) {
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      document.body.appendChild(link);
+      link.href = srcouce;
+    }
+
+    function onLoadParticleJS() {
+      particlesJS.load('loadingBgPart', 'https://vg00.net/js/particles.json', function() {
+        document.querySelector('#loadingBgPart').classList.add('ready');
+      });
+    }
+
+    window.LoadScript('https://vg00.net/js/particles.min.js', function() {
+      onLoadParticleJS();
+    });
+
+    window.SPEED_URL = [
+      'https://va01.net/',
+      'https://va02.net/',
+      'https://va03.net/',
+      'https://va04.net/',
+      'https://va05.net/',
+      'https://va66.net/',
+      'https://01ag.net/',
+      'https://02ag.net/',
+      'https://04ag.net/',
+      'https://05ag.net/',
+      'https://66ag.net/',
+      'https://vg00.net/',
+      'https://vg01.net/',
+      'https://vg02.net/',
+      'https://vg03.net/',
+      'https://vg06.net/',
+      'https://vg08.net/'
+    ];
+  </script>
+  <script type="text/javascript" src="https://vg00.net/js/particles.min.js"></script>
+
+  <!-- 这里是主要的测速文件 -->
+  <script src="https://vg00.net/js/speed.js"></script>
+</body>
+
+</html>

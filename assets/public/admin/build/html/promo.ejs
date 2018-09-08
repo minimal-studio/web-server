@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <link rel="stylesheet" href="/css/loading.css">
+    <link rel="stylesheet" href="/static/css/main.style.css">
+  	<meta name="renderer" content="webkit">
+    <style>
+ 
+      body {
+        background-color: #2c2e42;
+      }
+      [fill] {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        bottom: 0;
+      }
+      #coverImage {
+        background-repeat: no-repeat;
+        background-origin: content-box;
+        background-clip: content-box;
+        background-position: 50% 50%;
+        background-attachment: fixed;
+        background-size: cover;
+        background-color: #317da1;
+      }
+      #coverImageContainer {
+        z-index: -1;
+        position: fixed;
+        overflow: hidden;
+      }
+      #login-form .login-field .form-group .control-label {
+        width: 80px !important;
+        left: -80px !important;
+      }
+      .login-field {
+        padding-bottom: 20px !important;
+        height: auto !important;
+      }
+      #login-form .login-field .form-group .form-tip {
+        display: block !important;
+      }
+      .ready .loading-logo {
+        display: none;
+      }
+      #login-form {
+        opacity: 1;
+        margin: 0 auto;
+        /*margin-top: 20%;*/
+      }
+      #siteTitle {
+        font-size: 16px;
+      }
+      .login-content, .loin-panel-content {
+        z-index: 3 !important;
+      }
+      
+      .copyright:hover {
+        z-index: 4 !important;
+      }
+      .bg-container {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: 0;
+        bottom: 0;
+        z-index: -1;
+        background-size: cover;
+        background-image: url(https://v6tp.edumf.cn/images/wallpager/002.jpg);
+        filter: blur(20px);
+      }
+      @media screen and (max-width: 640px) {
+         .login-panel-container {
+           padding-top: 0;
+           overflow-y: auto;
+           overflow-x: hidden;
+         }
+        
+        .copyright .container-center {
+          display: block !important;
+          padding: 10px 0;
+        }
+        .copyright .download-block {
+          display: block !important;
+        }
+        .copyright {
+          position: relative !important;
+          margin-top: 40px;
+        }
+        .login-panel-container .copyright .container-center {
+          width: auto;
+          text-align: center;
+        }
+        .copyright .download-block {
+          margin-left: 0;
+        }
+
+        .download-container {
+          display: none;
+        }
+
+        .login-panel-container .loin-panel-content {margin-top: 120px;}
+      }
+
+      @media screen and (max-width: 1301px)  {
+        .loin-panel-content {
+          margin-top: 150px;
+        }
+
+        .logo {
+          top: -80px;
+        }
+      }
+    
+    </style>
+  </head>
+
+  <body>
+    <script src="/libs/js/loading.js"></script>
+    <div class="login-panel-container">
+      <div class="loin-panel-content">
+        <a href="/" class="login-panel-logo"><img src="https://v6tp.edumf.cn/images/logo/logo.main.png" alt="Logo | 首页"></a>
+        <div id="login-form" class="con-card">
+          <header>
+            <div class="text-center" style="padding: 20px 40px;" id="siteTitle">
+            注册
+            </div>
+          </header>
+          <div class="login-field">
+            <div class="horizontal-form">
+              <div class="form-group">
+                <label for="" class="control-label">登陆账号</label>
+                <div class="icon-input normal show-title">
+                  <input type="text" placeholader="账号名" id="username" class="form-control" placeholder="注册账号">
+                  <span class="title"><span>账号</span></span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="" class="control-label">登陆密码</label>
+                <div class="icon-input normal show-title">
+                  <input type="text" disabled value="a123456" class="form-control">
+                  <span class="title">登陆后需要修改</span>
+                </div>
+              </div>
+            </div>
+            <div class="text-center">
+              <bottom class="btn flat login-btn theme" id="registerBtn" onclick="registe()">注册</bottom>
+              <div class="tip" id="resTip"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="copyright"><div class="lot-license bg1"><div class="container-center"><img src="//v6tp.edumf.cn/images/index/footer-approve.png" alt=""><span class="flex"></span><div><span>建议使用的浏览器体验 </span><img src="//v6tp.edumf.cn/images/index/browser.png" alt=""></div></div></div><div class="content bg2"><div class="container-center"><div class="block-item idx-1 download-block"><a href="/" target="_blank"><span class="item-title">迅游娱乐</span></a><span class="item-title">信誉保证</span><a href="https://rent.9street.net/" class="text item-title" target="_blank">技术支持 九街工作室「THE 9STREET」</a><div class="download-container"><div class="download-content"><div class="title">下载中心</div><div class="hide-container"><div class="title">手机APP</div><div class="hide-content"><div class="panel-warm"><h4 class="title">APP 安装步骤, iOS 和 Android 通用</h4><div class="item">1. 使用手机打开 “浏览器”, 输入 vg06.net 后确定访问</div><div class="item">2. <span>请使用 <a class="link-btn" target="_blank" href="http://android.myapp.com/myapp/detail.htm?apkName=me.scan.android.client">QRCode扫描器</a> 扫描二维码进行下载</span></div><div class="item">3. iOS 11 以上的朋友可以直接使用相机应用扫描</div><div class="item">4. 安装打开即可使用, 感受流畅的移动投注体验</div></div><div class="qrcode"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGcAAABnCAIAAACSI8uuAAAB+klEQVR4nOzcQW7jMAxG4brI/a/sboUCTshH0laA9y0zmdr9wRKyJOt1nuePkn6fvoGvZGqEqRGmRpgaYWqEqRGmRpga8Xr/z8dxtF8y8jSyXnf9fuTzLm/u01ojTI0wNeJDX1tVZkeyfadyrRvu01ojTI0wNSLR11aRv/+JcVm2Z3Xd5z/WGmFqhKkRsK91ueopV59f9bubWWuEqRGmRjzc11Z3zp0VWWuEqRGmRsC+Nj1Wuupl2esO3ae1RpgaYWpEoq9NjJsq656RZ9Uh1hphaoSpER/62m47xLPzcUOsNcLUCFMjGvav3TkXNr0OG2StEaZGmBqRGK917UHL9pRKD4rsFwFzedYaYWqEqRGJ8Vqkp3TNeWX7afY7xedWa40wNcLUiIZ1g679tJX+1fXzg6w1wtQIUyPgusHaIyb2nW24Brqy1ghTI0yNGNy/NvEe1QTQi601wtQIUyM2Pc8ju+aQXQco/l7WGmFqhKkRm57nkZ2nq6wbgLGhtUaYGmFqxMPneWT/b2V9tuvdLGsNMjXC1IhNz/NYVd61yq45OF4bZGqEqREP97WuMdSda6/WGmRqhKkRG53nEXlmrKwJOL/2MFMjTI14+DyPrMjz5tX3IxyvDTI1wtSIY7cTO76CtUaYGmFqhKkRpkaYGmFqhKkRfwEAAP//DUT/3N4phy4AAAAASUVORK5CYII="></div></div></div><div class="hide-container"><div class="title">手机网页版</div><div class="hide-content"><div class="panel-warm"><h4 class="title">访问手机网页版</h4><div class="item">1. 使用手机打开 “浏览器”, 输入 vg06.net 后确定访问</div><div class="item">2. 选择 “手机网页版浏览”</div></div><div class="qrcode"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGcAAABnCAIAAACSI8uuAAAB+klEQVR4nOzcQW7jMAxG4brI/a/sboUCTshH0laA9y0zmdr9wRKyJOt1nuePkn6fvoGvZGqEqRGmRpgaYWqEqRGmRpga8Xr/z8dxtF8y8jSyXnf9fuTzLm/u01ojTI0wNeJDX1tVZkeyfadyrRvu01ojTI0wNSLR11aRv/+JcVm2Z3Xd5z/WGmFqhKkRsK91ueopV59f9bubWWuEqRGmRjzc11Z3zp0VWWuEqRGmRsC+Nj1Wuupl2esO3ae1RpgaYWpEoq9NjJsq656RZ9Uh1hphaoSpER/62m47xLPzcUOsNcLUCFMjGvav3TkXNr0OG2StEaZGmBqRGK917UHL9pRKD4rsFwFzedYaYWqEqRGJ8Vqkp3TNeWX7afY7xedWa40wNcLUiIZ1g679tJX+1fXzg6w1wtQIUyPgusHaIyb2nW24Brqy1ghTI0yNGNy/NvEe1QTQi601wtQIUyM2Pc8ju+aQXQco/l7WGmFqhKkRm57nkZ2nq6wbgLGhtUaYGmFqxMPneWT/b2V9tuvdLGsNMjXC1IhNz/NYVd61yq45OF4bZGqEqREP97WuMdSda6/WGmRqhKkRG53nEXlmrKwJOL/2MFMjTI14+DyPrMjz5tX3IxyvDTI1wtSIY7cTO76CtUaYGmFqhKkRpkaYGmFqhKkRfwEAAP//DUT/3N4phy4AAAAASUVORK5CYII="></div></div></div><div class="hide-container"><div class="title">PC网页版</div><div class="hide-content"><div class="panel-warm"><h4 class="title">PC网页版</h4><div class="item">1. 我们采用了全站 HTTPS 通讯加密架构, 保障您的隐私、资金安全</div><div class="item">2. 我们提供了多套游戏模式模板，让您玩的尽兴</div></div></div></div><div class="hide-container"><div class="title">客户端</div><div class="hide-content"><div class="download-icons"><a class="download-item" href="http://download.edumf.cn/store/v6/client/client/win/win_client.zip" target="_blank"><i class="fa fa-031"></i><span class="title">PC 客户端</span></a><a class="download-item" href="http://download.edumf.cn/store/v6/client/client/mac/mac_client.dmg" target="_blank"><i class="fa fa-032"></i><span class="title">macOS 客户端</span></a><a class="download-item" href="https://download.edumf.cn/store/v6/client/gameplan/download/gameplan.zip" target="_blank"><i class="fa fa-083"></i><span class="title">挂机神器</span></a></div></div></div></div></div></div><div class="block-item idx-3"><div class="text"><div>© 2017 - 2018 迅游娱乐 <span class="light-text">菲律宾 PAGCOR 博彩牌照</span></div><div>迅游娱乐郑重提示: 彩票有风险，投注需谨慎，不向未满 18 岁的青少年出售彩票</div></div></div></div></div></div>
+      <div class="bg-container"></div>
+    </div>
+    <script src="/static/js/basicHelper.js"></script>
+    <script>
+      <%- clientConfig %>
+      window.G_F_GetRandomURL = function() {
+        function _g() {
+          var {ORIGINAL_GATE_URL = []} = window;
+          return ORIGINAL_GATE_URL[window.G_F_Random([0, ORIGINAL_GATE_URL.length - 1])];
+        }
+        var __r = _g();
+        if(!window.G_F_IsUrl(__r)) __r = getRandomURL();
+        return __r;
+      }
+      var processObj = {};
+      if(window.SetLoadingDOM) processObj = window.SetLoadingDOM();
+      document.querySelector('#siteTitle').innerHTML = (window.WebsiteTitle || '') + '注册'
+    </script>
+    <script>
+      var tipCon=document.querySelector("#resTip"),isReg=!1,urls=window.ORIGINAL_GATE_URL.map(function(e){return fetch(e+"/x")});function registe(){if(!isReg){isReg=!0,tipCon.innerHTML="正在请求...";var e=document.querySelector("#username").value,o={Header:{Platform:"v6",Compress:0,Device:"browser",UserName:e,SessId:"1",Method:"promo_register"},Data:{NewUserName:e,ParentPromoCode:window.location.search.replace("?c=","")}},r=setTimeout(function(){isReg=!1,tipCon.innerHTML="请求超时"},6e3);window.onRequest.gameGate(o,function(e){clearTimeout(r),isReg=!1;var o="0"==e.Header.ErrCode.Code,n=e.Header.ErrCode.Desc;tipCon.innerHTML=n+(o?", 2秒后自动跳转到游戏页面.":""),tipCon.classList.add(o?"success":"error"),o&&setTimeout(function(){window.location.href="/"},1e3)})}}window.GATE_URL=window.ORIGINAL_GATE_URL[0]+"/x",Promise.race(urls).then(function(e){window.GATE_URL=e.url,processObj.done()}).catch(function(){processObj.done()});
+    </script>
+    <script language="javascript" type="text/javascript" src="//js.users.51.la/19248379.js"></script>
+    <noscript><a href="//www.51.la/?19248379" target="_blank" style="position: absolute; right: 0; bottom: 0;"><img alt="&#x6211;&#x8981;&#x5566;&#x514D;&#x8D39;&#x7EDF;&#x8BA1;" src="//img.users.51.la/19248379.asp" style="border:none" /></a></noscript>
+  </body>
+</html>

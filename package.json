@@ -10,7 +10,8 @@
     "update": "git pull remote master",
     "start": "NODE_ENV=development nodemon --watch routers/ --watch servers/ --watch dynamic-routres/ --exec npm run start:normal",
     "restartServer": "NODE_ENV=production pm2 restart uke-web-server",
-    "deploy": "NODE_ENV=production pm2 restart app.js --name 'uke-web-server'"
+    "zip": "mkdir -p ./zip-build; zip -r ./zip-build/build.zip ../uke-web-server/*",
+    "deploy": "NODE_ENV=production pm2 start ./servers/index.js --name 'uke-web-server'"
   },
   "repository": {
     "type": "git",

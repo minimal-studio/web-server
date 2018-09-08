@@ -1,0 +1,176 @@
+* {
+  font-family: Arial, "Microsoft YaHei", "微软雅黑";
+}
+
+body {
+  background-color: #2c2e42;
+  margin: 0;
+}
+
+.loading-logo {
+  width: 300px;
+  left: 50%;
+  margin-left: -150px;
+  position: absolute;
+  top: 20%;
+}
+#loadingBgPart.loaded-script .loading-logo {
+  display: none;
+}
+#loadingBgPart.loaded {
+  opacity: 0;
+}
+#loadingBgPart.ready {
+  transform: scale(1);
+}
+#loadingBgPart {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+  /*background-image: url(/images/wallpager/001.jpg);*/
+  transform: scale(1);
+
+  background-repeat: no-repeat;
+  background-origin: content-box;
+  background-clip: content-box;
+  background-position: 50%;
+  background-size: cover;
+
+  transition: all 0.5s ease;
+  -webkit-transition: all 0.5s ease;
+  -ms-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+}
+
+#coverImage {
+  background-repeat: no-repeat;
+  background-origin: content-box;
+  background-clip: content-box;
+  background-position: 50% 50%;
+  /*background-attachment: fixed;*/
+  background-size: cover;
+  background-color: #2c2e42;
+}
+
+#coverImage.loaded {
+  display: block;
+}
+
+.blur {
+  -moz-filter: blur(2px) brightness(0.8);
+  -o-filter: blur(2px) brightness(0.8);
+  -webkit-filter: blur(2px) brightness(0.8);
+  -ms-filter: blur(2px) brightness(0.8);
+  filter: blur(2px) brightness(0.8);
+}
+
+#coverBgColor {
+  background: linear-gradient(#DDD, #CCC);
+  background: -webkit-linear-gradient(#DDD, #CCC);
+  background: -ms-linear-gradient(#DDD, #CCC);
+  background: -moz-linear-gradient(#DDD, #CCC);
+  opacity: 0;
+}
+
+#coverBgColor, #coverImage {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0;
+  transition-property: all;
+  -webkit-transition-property: all;
+  -ms-transition-property: all;
+  -moz-transition-property: all;
+  transition-duration: 1s;
+  -webkit-transition-duration: 1s;
+  -ms-transition-duration: 1s;
+  -moz-transition-duration: 1s;
+  transition-timing-function: ease;
+  -webkit-transition-timing-function: ease;
+  -ms-transition-timing-function: ease;
+  -moz-transition-timing-function: ease;
+}
+
+.blur#coverImage {
+  top: -30px;
+  left: -30px;
+  right: -30px;
+  bottom: -30px;
+}
+.brightness#coverImage {
+  filter: brightness(0.7);
+}
+
+#coverBgColor.active, #coverImage.active {
+  opacity: 1;
+}
+
+#process {
+  color: #FFF;
+  text-align: center;
+  transition: opacity 0.5s ease;
+  -webkit-transition: opacity 0.5s ease;
+  -ms-transition: opacity 0.5s ease;
+  -moz-transition: opacity 0.5s ease;
+  /*display: none;*/
+}
+.loaded#process {
+  z-index: -1;
+  opacity: 0;
+}
+/*.loaded#process #processBg,
+.loaded#process #processText {
+}*/
+
+#processBg {
+  background-color: #FFF;
+  height: 1px;
+  box-shadow: 0 0 6px rgba(255,255,255,0.5);
+  border-radius: 1px;
+  transition: all 0.5s ease;
+  -webkit-transition: all 0.5s ease;
+  -ms-transition: all 0.5s ease;
+  -moz-transition: all 0.5s ease;
+  margin: 0 auto;
+  position: relative;
+  top: 50%;
+  transform: translateY(50%);
+}
+
+#processText {
+  font-size: 16px;
+  height: 24px;
+  width: 70px;
+  line-height: 24px;
+  border-radius: 5px;
+  border: 1px solid #FFF;
+  background-color: #2c2e41;
+  box-shadow: 0 0 6px rgba(255,255,255,0.5);
+  z-index: 1;
+  color: #FFF;
+  margin: 0 auto;
+  position: relative;
+  top: 50%;
+  transform: translateY(50%);
+  text-shadow: 0 0 12px rgba(255,255,255,1);
+}
+
+[fill] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+}
+
+#coverImageContainer {
+  z-index: -1;
+  position: fixed;
+  overflow: hidden;
+}

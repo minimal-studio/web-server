@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta keyword=<%- keyword %>/>
+	<meta name="renderer" content="webkit">
+  <title>
+    <%- title %>
+  </title>
+  <link rel="shortcut icon" type="image/png" href="/images/favicon.png"/>
+
+  <script>
+    if (!document.addEventListener) {
+      window.location.href = '/html/redirect.html';
+    }
+    window.FnDefaultLaunchApp = () => {
+      return $PC.getPageNavConfig('homePage');
+    };
+  </script>
+
+  <link rel="stylesheet" href="/css/loading.css">
+</head>
+
+<body>
+  <script src="/js/loading.js"></script>
+
+  <div id="Main"></div>
+
+  <div id="coverImageContainer" fill>
+    <div class="coverImage blur" id="coverImage" fill></div>
+    <div class="coverBgColor" id="coverBgColor" fill></div>
+  </div>
+
+  <script>
+    <%- clientConfig %>
+
+    window.DeviceInfo = 'desktop';
+    window.IsDesktopMode = true;
+    // window.DefaultLaunchGameCode = 'CQSSC';
+    window.DEVICE = "pc_browser";
+    window.SCRIPT_VERSION = 'v6.1.363';
+  </script>
+
+  <script src="/static/js/platform-main.js?v=v6.1.363"></script>
+</body>
+
+</html>

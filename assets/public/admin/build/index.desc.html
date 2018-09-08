@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=DEVICE-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <meta keyword="标题"/>
+    <link rel="shortcut icon" type="image/png" href="./favicon.png"/>
+    <title>标题</title>
+
+    <script>
+      window.SCRIPT_CND_URL = '//gbak.01ssc.net';
+      // window.SCRIPT_CND_URL = '//cdn-ccs.mookee.cn';
+      // window.SCRIPT_CND_URL = '//v6jccs.tailike.top';
+
+      // window.DefaultLaunchGameCode = 'HKLHC';
+      // window.DefaultLaunchGameCode = 'CQSSC';
+      window.DefaultLaunchGameCode = 'PTSSC60S';
+      if (!document.addEventListener) {
+        // alert('IE11+ or not IE');
+        window.location.href = '/redirect.html';
+      }
+    </script>
+
+    <link rel="stylesheet" href="./css/loading.css">
+    <link rel="stylesheet" href="./css/icon.css/external.css">
+  </head>
+
+  <body>
+    <script src="./js/loading.js"></script>
+
+    <div id="Main"></div>
+
+    <div id="coverImageContainer" fill>
+      <div class="coverImage blur" id="coverImage" fill></div>
+      <div class="coverBgColor" id="coverBgColor" fill></div>
+    </div>
+    <script>
+      /**
+       * 服务器返回的Config
+       */
+      window.__none = '';
+      // window.__none = [75, 79, 75, 80, 79, 81, 79, 88];
+      window.getGateUrlFunc = (function() {
+        var nodes = {
+          // gateNodes: ["http://192.168.192.175:47779"],
+          gateNodes: [
+            "https://hh2beta.99safe.org:37779",
+            // "https://v666.99safe.org:37779",
+            // "https://12441.99safe.org:37779",
+            // "https://gate.66ag.net:37779",
+            // "https://gate.vg03.net:37779",
+            // "https://gate.vg08.net:37779",
+            // "https://gate.va04.net:37779",
+            // "https://gate.va66.net:37779"
+          ],
+          httpsNodes: ["https://hh2beta.99safe.org:37779", "https://v666.99safe.org:37779"]
+        };
+        window.ORIGINAL_GATE_URL = /https/.test(document.location.protocol) ? nodes.httpsNodes : nodes.gateNodes;
+      })(window);
+      window.DOMAIN_COLL_CDN = {"01ag.net":"","04ag.net":"","05ag.net":"","09ag.net":"v6tp.edumf.cn","game.va02.net":"","game.va05.net":"","game.vg02.net":"","va03.net":"","va66.net":"","vg00.net":"","vg01.net":"","vg06.net":""};
+      window.PLATFORM = "v6";
+      window.DOMAIN_COLL = ["https://v6tp.edumf.cn"];
+      window.WebsiteTitle = '迅游娱乐'
+
+      window.___ENV = 'dev';
+
+      window.DEVICE = "pc_browser";
+
+      var isMobile = /Android|iOS|iPhone/.test(navigator.userAgent);
+      window.DeviceInfo = isMobile ? "mobile" : "desktop";
+      window.IsDesktopMode = !isMobile;
+
+      window.SLOT_URL = 'http://slot.9street.com:7456';
+
+      window.NoDispatchSystemAnnouncements = true;
+      // window.OnReceiveNewRecord
+    </script>
+    <script>
+      /**
+       * 内部方法
+       * 将字符串转义成 char code
+       * @param  {[type]} str [description]
+       * @return {[type]}     [description]
+       */
+      function getCryptArr(str) {
+        let _cryptKeyArr = [];
+        for(var iInCryptKey = 0; iInCryptKey < str.length; iInCryptKey++) {
+          _cryptKeyArr.push(str[iInCryptKey].charCodeAt(0) + iInCryptKey);
+        }
+        return _cryptKeyArr;
+      }
+      function getHashArr(strArr) {
+        var result = [];
+        strArr.forEach(function (item) {
+          result.push(getCryptArr(item))
+        });
+        console.log(JSON.stringify(result));
+      }
+      var balanceDesc = [
+        "现金余额的金额，是充值 代充 自身返点的钱，需要 30% 流水才能提现。",
+        "分红 + 活动的金额，是所有的活动的收益和分红，可以直接提现。如需使用分红余额进行投注，需把分红余额转到彩票余额方可投注。",
+        "分红 + 活动余额的金额，给下级转账，需要先转换到彩票余额，在给下级充值。",
+        "注：自身返点属于个人投注行为故此在彩票余额， 下级给上级返点属于活动收益在分红余额。"
+      ];
+      var googlePWDesc = [
+        '下载 <谷歌身份验证器> APP',
+        '输入资金密码生成验证二维码, 并且只能生成一次, 必须要绑定成功, 如果不成功, 请联系客服',
+        '使用 <谷歌身份验证器> 扫一扫对应的二维码即可绑定',
+        '以后每一次登录需要输入 <谷歌身份验证器> 中生成的密码',
+        '如果已经绑定过一次, 再次生成即绑定新的验证码, 需要重新绑定'
+      ]
+      // 3、将文件拖入文本框即可快速实现文件上传，大文件拖拽上环效果更佳。;
+      var dsdesc = `说明：;
+1、每一注号码之间的间隔符支持 回车 空格 [ ] 逗号[,] 分号[;];
+2、文件格式必须是.txt格式;
+3、导入文本内容将覆盖文本框中现有的内容。;
+4、一次投注支持100,000注！`;
+
+      // window.BalanceTip = {
+      //   bonus: '游戏 + 分红 + 活动',
+      //   total: '总余额',
+      //   wellet: '资金转换',
+      //   activity: '活动 + 分红',
+      //   game: '游戏余额'
+      // }
+      // getHashArr(balanceDesc);
+      window.SCRIPT_VERSION = '6.1.123';
+
+      window.SCRIPT_VERSION = 'v6.1.171';
+    </script>
+    <script src="./js/polyfill.js"></script>
+    <script>
+      window.onloadBundle();
+    </script>
+  </body>
+</html>
