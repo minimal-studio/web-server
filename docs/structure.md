@@ -4,7 +4,7 @@
 
 本 web server 程序运行在一个服务端口，通过不同的二级路由做不同的服务，内置以下通用服务
 
-### 1. 动态路由服务
+### 动态路由服务
 
 动态路由服务，用于动态使用 /dynamic-routres 下的文件路由
 127.0.0.1:3000/dynamic-router
@@ -33,11 +33,23 @@
    例如 /assets/public/admin/index.html 中，请求 /dyr/get-admin-data 获取特定数据
    可以通过编写动态路由响应
 
-### 2. public 静态资源服务
+### 配置
+
+./config 配置了默认端口和静态资源的路径
+
+- FEServerPort 6650 前端发布模块的端口
+- mainServerPort 28101 前端静态资源端口
+- publicStaticPaths 静态资源的路径
+  - 例如
+  - publicStaticPaths = ['public1', 'p1']
+  - host:28101/public1 == host:28101/p1
+- adminServerPort 28102 管理模块的端口
+
+### public 静态资源服务
 
 127.0.0.1:3000/public
 
-### 3. auth 系统验证接口
+### auth 系统验证接口
 
 127.0.0.1:3000/auth
 

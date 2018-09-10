@@ -1,5 +1,8 @@
 let express = require('express');
 let path = require('path');
+
+let { publicStaticPaths } = require('../config');
+
 let publicRouter = express.Router();
 
 let options = {
@@ -13,6 +16,8 @@ let options = {
   }
 }
 
-publicRouter.use('/public', express.static(path.join(__dirname, '../assets/public'), options))
+publicStaticPaths.forEach((_p) => {
+  publicRouter.use('/' + _p, express.static(path.join(__dirname, '../assets/public'), options))
+});
 
 module.exports = publicRouter;

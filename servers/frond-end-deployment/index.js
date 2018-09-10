@@ -2,7 +2,6 @@ let express = require('express');
 let compression = require('compression');
 let helmet = require('helmet');
 let cors = require('cors')
-let config = require('./config');
 
 let { FEServerPort } = require('../../config');
 
