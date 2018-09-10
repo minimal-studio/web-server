@@ -16,6 +16,15 @@ let deploymentRouter = express.Router();
 const jsonParser = bodyParser.json();
 const urlencodedParser = bodyParser.urlencoded({ extended: false });
 
+const resFilter = (req, res, next) => {
+  res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+  res.header('Expires', '-1');
+  res.header('Pragma', 'no-cache');
+  next();
+}
+
+deploymentRouter.use(resFilter);
+
 /**
  * convert obj to array
  */
@@ -116,7 +125,8 @@ deploymentRouter.get('/project', (req, res) => {
           break;
         case 'join':
           projectData = findAll(projectObj, {collaborators: (o) => {
-            return o.hasOwnProperty(user);
+            console.log(o.collaborators)
+            return o.collaborators.hasOwnProperty(user);
           }});
           break;
       }
@@ -259,11 +269,10 @@ deploymentRouter.post('/rollback', [jsonParser, checkProjAuth], (req, res) => {
  */
 deploymentRouter.put('/project', [jsonParser, checkProjAuth], (req, res) => {
   let { project } = req.assetConfig;
-  let { projCode, projName, projDesc, webhook } = req.body;
-  console.log(webhook)
+  let { projCode, projName, projDesc, webhook, host } = req.body;
   let nextProj = Object.assign({}, project, {
     motifyDate: Date.now(),
-    projCode, projName, projDesc, webhook
+    projCode, projName, projDesc, webhook, host
   });
   db.set(`projects.${project.id}`, nextProj).write();
   res.json({
@@ -290,9 +299,16 @@ deploymentRouter.post('/del-project', [jsonParser, checkProjAuth], (req, res) =>
  */
 deploymentRouter.post('/join', [jsonParser], (req, res) => {
   let { projId, username } = req.body;
-  db.get(`projects.${projId}.collaboratorApplies`).push(username).write();
+  db.update(
+    `projects.${projId}.collaboratorApplies`,
+    o => {
+      let res = [...o];
+      if(!_.includes(res, username)) res.push(username);
+      return res;
+    }
+  ).write();
   res.json({
-    err: 'not yet.'
+    err: null
   });
 });
 
@@ -301,13 +317,24 @@ deploymentRouter.post('/join', [jsonParser], (req, res) => {
  */
 deploymentRouter.post('/approve', [jsonParser, checkProjAuth], (req, res) => {
   let { project, asset } = req.assetConfig;
-  let { projId, applicant } = req.body;
+  let { username, projId, applicant, updatable, deletable, releasable } = req.body;
   if(!applicant) return res.json({
     err: 'need to pass applicant'
   });
-  db.get(`projects.${projId}.collaboratorApplies`).remove('applicant').write();
+  db
+    .update(`projects.${projId}.collaboratorApplies`, o => {
+      let res = [...o];
+      console.log(o)
+      _.pull(res, applicant);
+      console.log(res)
+      return res;
+    })
+    .set(`projects.${projId}.collaborators.${applicant}`, {
+      updatable, deletable, releasable
+    })
+    .write();
   res.json({
-    err: 'not yet.'
+    err: null
   });
 });
 

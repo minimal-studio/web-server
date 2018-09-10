@@ -45,6 +45,7 @@ TODO
       createdDate: datetime,
       motifyDate: datetime,
       assetsCount: 1,
+      host: '',
       collaborators: {
         zoe: {
           updatable: true,
