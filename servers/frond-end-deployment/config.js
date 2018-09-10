@@ -27,6 +27,11 @@ const db = low(adapter);
 const auditAdapter = new FileSync(auditdbStorePath);
 const auditdb = low(auditAdapter);
 
+/**
+ * TODO: 默认初始化两个模块
+ * 1. 管理此 web server 的模版
+ * 2. 管理默认管理中心的模版
+ */
 db.defaults({
   version: 1,
   projects: {},
