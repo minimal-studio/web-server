@@ -36,7 +36,6 @@ db.defaults({
 auditdb.defaults({}).write();
 
 module.exports = {
-  port: 6650,
   dbStorePath,
   staticServerPath,
   zipAssetsStorePath,

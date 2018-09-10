@@ -2,8 +2,9 @@ let express = require('express');
 let compression = require('compression');
 let helmet = require('helmet');
 let cors = require('cors')
-let config = require('./config');
 let path = require('path');
+
+let { adminServerPort } = require('../../config');
 
 const startServer = () => {
   let app = express();
@@ -24,8 +25,8 @@ const startServer = () => {
 
   app.use('/admin', express.static(path.join(process.cwd(), './assets/_admin/build/'), options));
   
-  app.listen(config.port, () => {
-    console.log('FEDeployment server started, at port: ' + config.port)
+  app.listen(adminServerPort, () => {
+    console.log('Admin server started, at port: ' + adminServerPort)
   });
 }
 

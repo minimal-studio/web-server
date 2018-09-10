@@ -4,6 +4,8 @@ let helmet = require('helmet');
 let cors = require('cors')
 let config = require('./config');
 
+let { FEServerPort } = require('../../config');
+
 let deployment = require('./deployment');
 
 const startServer = () => {
@@ -14,8 +16,8 @@ const startServer = () => {
   
   app.use(deployment);
 
-  app.listen(config.port, () => {
-    console.log('FEDeployment server started, at port: ' + config.port)
+  app.listen(FEServerPort, () => {
+    console.log('FEDeployment server started, at port: ' + FEServerPort)
   });
 }
 module.exports.start = startServer;
