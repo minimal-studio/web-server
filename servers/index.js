@@ -22,8 +22,8 @@ let accessLogStream = fs.createWriteStream(path.join(process.cwd(), '/web-server
 app.use(morgan('combined', {stream: accessLogStream}));
 
 let pathInfos = fs.readdirSync(path.join(process.cwd(), './servers'));
-let ignoreFirld = 'index';
-pathInfos.filter(dirname => dirname.indexOf(ignoreFirld) == -1).forEach((dirname) => {
+let ignoreFirld = ['index.js', 'factories'];
+pathInfos.filter(dirname => ignoreFirld.indexOf(dirname) === -1).forEach((dirname) => {
   // console.log(dirname)
   let currServer = require('./' + dirname);
   let serverPath = currServer.alias || dirname;
@@ -41,7 +41,6 @@ pathInfos.filter(dirname => dirname.indexOf(ignoreFirld) == -1).forEach((dirname
     app.use(`/${serverPath}`, currServer);
   }
 });
-
 
 // app.use('/sub', webServerApp);
 // app.get('/', function (req, res) {

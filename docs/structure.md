@@ -7,13 +7,13 @@
 ### 动态路由服务
 
 动态路由服务，用于动态使用 /dynamic-routres 下的文件路由
-127.0.0.1:3000/dynamic-router
+127.0.0.1:28101/dynamic-router
 
 例如添加一个 test 到 /dynamic-routres 中
 /dynamic-routres/test/index.js
 
 当请求访问以下链接时，可以提供对应的动态路由
-127.0.0.1:3000/dyr/test
+127.0.0.1:28101/dyr/test
 
 挂载在特定的路由下主要是为了避免二级路由的重名而产生的不可预见的问题
 
@@ -47,10 +47,12 @@
 
 ### public 静态资源服务
 
-127.0.0.1:3000/public
+127.0.0.1:28101/public
 
 ### auth 系统验证接口
 
-127.0.0.1:3000/auth
+127.0.0.1:28101/auth
 
-考虑使用 GraphQL 来提供基础权限和验证
+TODO:
+
+使用 GraphQL 来提供基础权限和验证

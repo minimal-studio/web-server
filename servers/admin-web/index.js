@@ -15,15 +15,19 @@ const startServer = () => {
   let options = {
     dotfiles: 'ignore',
     etag: false,
-    index: false,
+    index: 'index.html',
     maxAge: '1d',
-    redirect: false,
+    redirect: true,
     setHeaders: function (res, path, stat) {
       res.set('x-timestamp', Date.now())
     }
   }
 
   app.use('/admin', express.static(path.join(process.cwd(), './assets/_admin/build/'), options));
+
+  app.use((req, res) => {
+    res.status(404).send('none');
+  })
   
   app.listen(adminServerPort, () => {
     console.log('Admin server started, at port: ' + adminServerPort)
