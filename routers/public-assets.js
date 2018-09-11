@@ -10,7 +10,7 @@ let options = {
   etag: false,
   index: 'index.html',
   maxAge: '1d',
-  redirect: false,
+  redirect: true,
   setHeaders: function (res, path, stat) {
     res.set('x-timestamp', Date.now())
   }
