@@ -22,13 +22,15 @@
 //   })
 // }
 
-let notFount = require('../routers/notfound');
+let notFount = require('../notfound');
 
 let handleError = (err, req, res, next) => {
+  console.log(err)
   if(err) {
-    notFount(req, res);
+    return notFount(req, res);
+  } else {
+    return res.status(404).send("Sorry can't find that!")
   }
-  next();
 }
 
 module.exports = handleError;

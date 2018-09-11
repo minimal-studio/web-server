@@ -10,7 +10,7 @@ let path = require('path');
 let { mainServerPort } = require('../config');
 let publicRouter = require('../routers/public-assets');
 // let processUpdater = require('../routers/process-updater');
-let handleError = require('../error-handle');
+let handleError = require('../routers/error-handle');
 
 let app = express();
 
@@ -55,7 +55,9 @@ app.use(publicRouter);
 // app.use(processUpdater);
 
 // 最后处理所有错误
-if(process.env.NODE_ENV == 'production') app.use(handleError);
+app.use((req, res, next) => {
+  res.status(404).send('non')
+});
 
 app.listen(mainServerPort, (err) => {
   if(err) return console.log(err);

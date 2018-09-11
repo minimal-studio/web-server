@@ -8,7 +8,7 @@ let publicRouter = express.Router();
 let options = {
   dotfiles: 'ignore',
   etag: false,
-  index: false,
+  index: 'index.html',
   maxAge: '1d',
   redirect: false,
   setHeaders: function (res, path, stat) {

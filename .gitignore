@@ -35,7 +35,7 @@ web-server.log
 # test-data.js
 f-e-deployment-store/
 assets/zips
-assets/public/Project1
+assets/public/*
 assets/_admin/*
 
 _none
