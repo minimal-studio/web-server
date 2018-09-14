@@ -22,7 +22,7 @@ let accessLogStream = fs.createWriteStream(path.join(process.cwd(), '/web-server
 app.use(morgan('combined', {stream: accessLogStream}));
 
 let pathInfos = fs.readdirSync(path.join(process.cwd(), './servers'));
-let ignoreFirld = ['index.js', 'factories'];
+let ignoreFirld = ['index.js', 'config'];
 pathInfos.filter(dirname => ignoreFirld.indexOf(dirname) === -1).forEach((dirname) => {
   // console.log(dirname)
   let currServer = require('./' + dirname);

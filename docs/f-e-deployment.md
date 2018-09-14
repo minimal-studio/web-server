@@ -45,6 +45,9 @@ TODO
       createdDate: datetime,
       motifyDate: datetime,
       assetsCount: 1,
+      scpTargetHost: '',
+      sshSourceDir: '',
+      sshTargetDir: '',
       host: '',
       collaborators: {
         zoe: {

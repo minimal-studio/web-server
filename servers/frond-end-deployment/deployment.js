@@ -7,8 +7,14 @@ const multer  = require('multer');
 // const fse  = require('fs-extra');
 const fs  = require('fs');
 const _ = require('lodash');
+const { exec } = require('child_process');
+const sshParser = require('./ssh-config-parser');
 
-const { db, getDeployPath, zipAssetsStorePath, audit, getAudit, maxAssetCount } = require('./config');
+const {
+  db, getDeployPath, zipAssetsStorePath, 
+  audit, getAudit, maxAssetCount, sshPath,
+  staticServerPath
+} = require('./config');
 const unzipFile = require('./unzip');
 
 let deploymentRouter = express.Router();
@@ -21,6 +27,10 @@ const resFilter = (req, res, next) => {
   res.header('Expires', '-1');
   res.header('Pragma', 'no-cache');
   next();
+}
+
+const getSSHHostList = () => {
+  return sshParser(fs.readFileSync(sshPath, "utf8"));
 }
 
 deploymentRouter.use(resFilter);
@@ -60,6 +70,10 @@ const upload = multer({storage: fileStorageConfig});
  */
 const checkProjAuth = (req, res, next) => {
   let { username, projId, assetId } = req.body;
+
+  if(!username) return res.json({err: 'username is required'});
+  if(!projId) return res.json({err: 'projId is required'});
+  
   let currProjConfig = db.get(`projects.${projId}`).value() || {};
   let currAssetConfig = db.get(`assets.${assetId}`).value() || {};
 
@@ -69,7 +83,7 @@ const checkProjAuth = (req, res, next) => {
     asset: currAssetConfig,
   }
 
-  if(!!username && (currProjConfig.founder == username || !!currProjConfig.collaborators[username])) {
+  if(!!username && !!currProjConfig && (currProjConfig.founder === username || !!currProjConfig.collaborators[username])) {
     assetConfig.isPass = true;
   } else {
     assetConfig.isPass = false;
@@ -143,7 +157,10 @@ deploymentRouter.get('/project', (req, res) => {
  * create project
  */
 deploymentRouter.post('/project', jsonParser, (req, res) => {
-  const { username, projName, projCode, projDesc, webhook } = req.body;
+  const {
+    username, projName, projCode, projDesc, webhook,
+    scpTargetHost, scpSourceDir, scpTargetDir
+  } = req.body;
   let isProjExist = !!db.get('projects').find({
     projCode
   }).value();
@@ -162,6 +179,7 @@ deploymentRouter.post('/project', jsonParser, (req, res) => {
     projCode,
     projDesc,
     webhook,
+    scpTargetHost, scpSourceDir, scpTargetDir,
     founder: username,
     collaborators: {},
     collaboratorApplies: [],
@@ -192,25 +210,62 @@ const releaseAsset = ({ project, asset }) => {
 }
 
 /**
+ * get ssh-host list
+ */
+deploymentRouter.get('/ssh-host', (req, res) => {
+  let hostList = getSSHHostList();
+  res.json({
+    err: null,
+    data: hostList
+  });
+});
+
+/**
  * release specified asset of specified project
  */
 deploymentRouter.post('/release', [jsonParser, checkProjAuth], (req, res) => {
   let { project, asset } = req.assetConfig;
   releaseAsset(req.assetConfig).then(() => {
-    let { username, projId, assetId } = req.body;
+    let {
+      username, projId, assetId,
+      isCallHook, isExecScp
+    } = req.body;
+
     let releaseLog = {
       operator: username,
       version: asset.version,
       note: asset.desc,
       type: 'release'
     };
+
     project.releaseRef = assetId;
     db.set(`projects.${projId}`, project).write();
     db.set(`assets.${asset.id}.isReleased`, true).write();
+
     audit(projId, releaseLog);
-    res.json({
-      err: null
-    });
+    
+    if(isCallHook) {
+
+    }
+
+    let execRes;
+
+    if(isExecScp) {
+      let { projCode, scpSourceDir, scpTargetHost, scpTargetDir } = project;
+      let sourcePath = path.join(staticServerPath, projCode, scpSourceDir, '*');
+      let scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${scpTargetDir}'; scp -r ${sourcePath} ${scpTargetHost}:${scpTargetDir}`;
+      
+      exec(scpCommand, (err) => {
+        res.json({
+          err: err ? (err + '') : null
+        });
+      });
+    } else {
+      res.json({
+        err: execRes ? (execRes + '') : null
+      });
+    }
+    
   }, () => {
     return res.json({
       err: 'File not exist.'
@@ -269,10 +324,14 @@ deploymentRouter.post('/rollback', [jsonParser, checkProjAuth], (req, res) => {
  */
 deploymentRouter.put('/project', [jsonParser, checkProjAuth], (req, res) => {
   let { project } = req.assetConfig;
-  let { projCode, projName, projDesc, webhook, host } = req.body;
+  let {
+    projCode, projName, projDesc, webhook, host,
+    scpTargetHost, scpSourceDir, scpTargetDir
+  } = req.body;
   let nextProj = Object.assign({}, project, {
     motifyDate: Date.now(),
-    projCode, projName, projDesc, webhook, host
+    projCode, projName, projDesc, webhook, host,
+    scpTargetHost, scpSourceDir, scpTargetDir
   });
   db.set(`projects.${project.id}`, nextProj).write();
   res.json({

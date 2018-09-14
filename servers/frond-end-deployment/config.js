@@ -3,6 +3,7 @@ const FileSync = require('lowdb/adapters/FileSync');
 const path = require('path');
 const fse = require('fs-extra');
 const fs = require('fs');
+const os  = require('os');
 
 const cwd = process.cwd();
 const dbPath = path.join(cwd, './f-e-deployment-store');
@@ -26,6 +27,7 @@ const db = low(adapter);
 
 const auditAdapter = new FileSync(auditdbStorePath);
 const auditdb = low(auditAdapter);
+const sshPath = path.join(os.homedir(), ".ssh/config");
 
 /**
  * TODO: 默认初始化两个模块
@@ -45,6 +47,7 @@ module.exports = {
   staticServerPath,
   zipAssetsStorePath,
   maxAssetCount,
+  sshPath,
   db,
   adapter,
   getDeployPath: (projCode) => {
