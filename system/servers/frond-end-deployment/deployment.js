@@ -199,7 +199,7 @@ deploymentRouter.post('/project', jsonParser, (req, res) => {
 
   res.json({
     err: null,
-    projId: createProjId
+    data: newProj
   });
 });
 

@@ -1,9 +1,14 @@
 let express = require('express');
 let path = require('path');
+let fs = require('fs');
 
 let { publicStaticPaths } = require('../config');
 
 let publicRouter = express.Router();
+
+fs.mkdir(path.join(process.cwd(), 'assets/public'), (err) => {
+  // console.log(err)
+});
 
 let options = {
   dotfiles: 'ignore',
@@ -17,7 +22,7 @@ let options = {
 }
 
 publicStaticPaths.forEach((_p) => {
-  publicRouter.use('/' + _p, express.static(path.join(__dirname, '../assets/public'), options))
+  publicRouter.use('/' + _p, express.static(path.join(process.cwd(), './assets/public'), options))
 });
 
 module.exports = publicRouter;

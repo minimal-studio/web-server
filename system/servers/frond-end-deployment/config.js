@@ -10,6 +10,7 @@ const dbPath = path.join(cwd, './runtime/f-e-deployment-store');
 const dbStorePath = path.join(dbPath, './store.json');
 const auditdbStorePath = path.join(dbPath, './audit-store.json');
 const staticServerPath = path.join(cwd, './assets/public');
+const adminResourcePath = path.join(cwd, './assets/_admin');
 const zipAssetsStorePath = path.join(cwd, './assets/zips');
 
 if(!fs.existsSync(dbStorePath)) {
@@ -47,6 +48,7 @@ module.exports = {
   staticServerPath,
   zipAssetsStorePath,
   maxAssetCount,
+  adminResourcePath,
   sshPath,
   db,
   adapter,
