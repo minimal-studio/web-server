@@ -9,7 +9,7 @@ let rootRoute = (req, res) => {
 }
 
 let dynamicRoute = (req, res) => {
-  let dynamicRoutersPath = path.join(process.cwd(), './dynamic-routres', req.params.route);
+  let dynamicRoutersPath = path.join(process.cwd(), './runtime/dynamic-routres', req.params.route);
   try {
     let currRouter = require(dynamicRoutersPath);
     // if(currRouter.subRouter) dynamicRouter.use(currRouter.subRouter);

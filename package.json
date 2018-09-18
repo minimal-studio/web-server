@@ -1,17 +1,16 @@
 {
   "name": "uke-web-server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
-    "babel": "babel-node ./servers/index.js --presets es2015",
-    "start:normal": "node ./servers/index.js",
+    "babel": "babel-node ./system/app.js --presets es2015",
+    "start:normal": "node ./system/app.js",
     "init": "git remote remove origin; git init; npm i",
     "update": "git pull remote master",
-    "start": "NODE_ENV=development nodemon --watch routers/ --watch servers/ --watch dynamic-routres/ --exec npm run start:normal",
+    "start": "NODE_ENV=development nodemon --watch routers/ --watch system/ --watch dynamic-routres/ --exec npm run start:normal",
     "restartServer": "NODE_ENV=production pm2 restart uke-web-server",
-    "zip": "mkdir -p ./zip-build; zip -r ./zip-build/build.zip ../uke-web-server/*",
-    "deploy": "NODE_ENV=production pm2 start ./servers/index.js --name 'uke-web-server'"
+    "zip": "sh ./zip.sh",
+    "deploy": "NODE_ENV=production pm2 start ./system/app.js --name 'uke-web-server'"
   },
   "repository": {
     "type": "git",

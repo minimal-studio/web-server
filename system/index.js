@@ -7,25 +7,26 @@ let fs = require('fs');
 let path = require('path');
 
 // let dynamicRoute = require('../routers/dynamic-router');
-let { mainServerPort } = require('../config');
-let publicRouter = require('../routers/public-assets');
+let { mainServerPort, systemDir } = require('./config');
+let publicRouter = require('./routers/public-assets');
 // let processUpdater = require('../routers/process-updater');
-let handleError = require('../routers/error-handle');
+let handleError = require('./routers/error-handle');
 
 let app = express();
+
+const serversDir = 'servers';
 
 app.use(helmet());
 app.use(compression());
 app.use(cors());
 
-let accessLogStream = fs.createWriteStream(path.join(process.cwd(), '/web-server.log'), {flags: 'a'});
+let accessLogStream = fs.createWriteStream(path.join(process.cwd(), '/runtime/web-server.log'), {flags: 'a'});
 app.use(morgan('combined', {stream: accessLogStream}));
 
-let pathInfos = fs.readdirSync(path.join(process.cwd(), './servers'));
+let pathInfos = fs.readdirSync(path.join(__dirname, serversDir));
 let ignoreFirld = ['index.js', 'config'];
 pathInfos.filter(dirname => ignoreFirld.indexOf(dirname) === -1).forEach((dirname) => {
-  // console.log(dirname)
-  let currServer = require('./' + dirname);
+  let currServer = require('./' + path.join(serversDir, dirname));
   let serverPath = currServer.alias || dirname;
   let startSubServer = currServer.start;
   let isForRootRouter = currServer.isForRootRouter;

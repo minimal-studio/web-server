@@ -11,6 +11,8 @@ const config = {
   adminServerPort: 28102,
   FEServerPort: 6650,
   webhookPort: 8890,
+  systemDir: 'system',
+  runtimeDir: 'runtime',
   publicStaticPaths: ['public', 'pb'],
 }
 

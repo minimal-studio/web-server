@@ -4,25 +4,40 @@
 
 ## 依赖
 
-- node
+- node > 10
 - babel 7
+- pm2
+
+```shell
+# 安装 nvm
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
+
+# source .bashrc
+. ~/.bashrc
+
+# 安装 node stable
+nvm install stable
+
+# pm2
+npm i pm2 -g
+```
 
 -----
 
 ## 提供的功能
 
 1. 提供一个通用的、快速搭建 web server 的脚手架
-2. 提供服务（server）注册和动态加载路由（router）的机制
-3. 前端资源版本管理，以及资源的权限管理
-4. 测试用的权限
+2. 提供 system 系统服务，和 runtime 运行时动态路由机制
+3. 前端资源版本管理，资源的权限管理
+4. 简易的权限
 
------
-
-## [基本结构](./docs/structure.md)
+- [基本结构](./docs/structure.md)
 
 -----
 
 ## 开始使用
+
+TODO 提供自动构建
 
 ### 自动构建
 

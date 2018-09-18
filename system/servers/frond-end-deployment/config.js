@@ -6,7 +6,7 @@ const fs = require('fs');
 const os  = require('os');
 
 const cwd = process.cwd();
-const dbPath = path.join(cwd, './f-e-deployment-store');
+const dbPath = path.join(cwd, './runtime/f-e-deployment-store');
 const dbStorePath = path.join(dbPath, './store.json');
 const auditdbStorePath = path.join(dbPath, './audit-store.json');
 const staticServerPath = path.join(cwd, './assets/public');

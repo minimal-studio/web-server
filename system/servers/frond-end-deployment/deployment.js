@@ -30,7 +30,12 @@ const resFilter = (req, res, next) => {
 }
 
 const getSSHHostList = () => {
-  return sshParser(fs.readFileSync(sshPath, "utf8"));
+  try {
+    let readRes = fs.readFileSync(sshPath, "utf8")
+    return sshParser(readRes);
+  } catch(e) {
+    return null;
+  }
 }
 
 deploymentRouter.use(resFilter);
