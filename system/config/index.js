@@ -13,6 +13,7 @@ const config = {
   webhookPort: 8890,
   systemDir: 'system',
   runtimeDir: 'runtime',
+  adminDirName: '_admin',
   publicStaticPaths: ['public', 'pb'],
 }
 

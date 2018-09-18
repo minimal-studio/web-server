@@ -205,7 +205,7 @@ deploymentRouter.post('/project', jsonParser, (req, res) => {
 
 const releaseAsset = ({ project, asset }) => {
   let zipFilePath = path.join(zipAssetsStorePath, asset.id + '.zip');
-  let outputPath = getDeployPath(project.projCode);
+  let outputPath = project._deployPath || getDeployPath(project.projCode);
 
   if(!fs.existsSync(outputPath)) {
     fs.mkdirSync(outputPath);
@@ -250,6 +250,7 @@ deploymentRouter.post('/release', [jsonParser, checkProjAuth], (req, res) => {
     audit(projId, releaseLog);
     
     if(isCallHook) {
+      // TODO: 完善通知机制
 
     }
 

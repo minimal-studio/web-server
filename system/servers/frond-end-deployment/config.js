@@ -5,16 +5,19 @@ const fse = require('fs-extra');
 const fs = require('fs');
 const os  = require('os');
 
+const { adminDirName } = require('../../config');
+
 const cwd = process.cwd();
 const dbPath = path.join(cwd, './runtime/f-e-deployment-store');
 const dbStorePath = path.join(dbPath, './store.json');
 const auditdbStorePath = path.join(dbPath, './audit-store.json');
 const staticServerPath = path.join(cwd, './assets/public');
-const adminResourcePath = path.join(cwd, './assets/_admin');
+const adminResourcePath = path.join(cwd, './assets', adminDirName);
 const zipAssetsStorePath = path.join(cwd, './assets/zips');
 
 if(!fs.existsSync(dbStorePath)) {
   fse.mkdirpSync(zipAssetsStorePath);
+  fse.mkdirpSync(adminResourcePath);
   fse.mkdirpSync(dbPath);
   fse.writeJsonSync(dbStorePath, {});
   fse.writeJsonSync(auditdbStorePath, {});
@@ -37,7 +40,20 @@ const sshPath = path.join(os.homedir(), ".ssh/config");
  */
 db.defaults({
   version: 1,
-  projects: {},
+  projects: {
+    [adminDirName]: {
+      "id": adminDirName,
+      "projName": "Admin",
+      "createdDate": Date.now(),
+      "projCode": adminDirName,
+      "founder": "admin",
+      "collaborators": {},
+      "collaboratorApplies": [],
+      "assetsCount": 0,
+      "_deployPath": adminResourcePath,
+      "assetNumb": 0
+    }
+  },
   assets: {},
 }).write();
 

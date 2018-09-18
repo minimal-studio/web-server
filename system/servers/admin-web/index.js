@@ -4,7 +4,7 @@ let helmet = require('helmet');
 let cors = require('cors')
 let path = require('path');
 
-let { adminServerPort } = require('../../config');
+let { adminServerPort, adminDirName } = require('../../config');
 
 const startServer = () => {
   let app = express();
@@ -23,7 +23,7 @@ const startServer = () => {
     }
   }
 
-  app.use('/admin', express.static(path.join(process.cwd(), './assets/_admin/build/'), options));
+  app.use('/admin', express.static(path.join(process.cwd(), `./assets/${adminDirName}/build/`), options));
 
   app.use((req, res) => {
     res.status(404).send('none');
