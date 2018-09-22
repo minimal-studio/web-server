@@ -96,6 +96,6 @@ module.exports = {
     auditdb.get(`${projId}`).push(nextState).write();
   },
   getAudit: (projId) => {
-    return [...auditdb.get(`${projId}`).value()].reverse();
+    return [...(auditdb.get(`${projId}`).value() || [])].reverse();
   }
 }
