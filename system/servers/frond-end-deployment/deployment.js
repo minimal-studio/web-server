@@ -259,7 +259,8 @@ deploymentRouter.post('/release', [jsonParser, checkProjAuth], (req, res) => {
     if(isExecScp) {
       let { projCode, scpSourceDir, scpTargetHost, scpTargetDir } = project;
       let sourcePath = path.join(staticServerPath, projCode, scpSourceDir, '*');
-      let scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${scpTargetDir}'; scp -r ${sourcePath} ${scpTargetHost}:${scpTargetDir}`;
+      let targetPath = path.join(scpTargetDir, projCode);
+      let scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${targetPath}'; scp -r ${sourcePath} ${scpTargetHost}:${targetPath}`;
       
       exec(scpCommand, (err) => {
         res.json({
