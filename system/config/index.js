@@ -1,3 +1,5 @@
+const path = require('path');
+
 /**
  * 端口说明
  * 28101 静态资源端口
@@ -14,6 +16,7 @@ const config = {
   systemDir: 'system',
   runtimeDir: 'runtime',
   adminDirName: '_admin',
+  dyrPath: path.join(process.cwd(), './runtime/dynamic-routres'),
   publicStaticPaths: ['public', 'pb'],
 }
 

@@ -1,5 +1,5 @@
 let express = require('express');
-let dynamicRoute = require('../../routers/dynamic-router');
+let dynamicRoute = require('./dynamic-router');
 
 let dyApp = express.Router();
 
