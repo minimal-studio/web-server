@@ -218,10 +218,11 @@ const releaseAsset = ({ project, asset }) => {
  * get ssh-host list
  */
 deploymentRouter.get('/ssh-host', (req, res) => {
-  let hostList = getSSHHostList();
+  let hostMapper = getSSHHostList();
   res.json({
     err: null,
-    data: hostList
+    data: Object.keys(hostMapper),
+    mapper: hostMapper
   });
 });
 
