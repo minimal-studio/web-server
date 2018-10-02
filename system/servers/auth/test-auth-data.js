@@ -1,9 +1,15 @@
-module.exports = {
-  alex: 'qwe123',
-  user: 'qwe123',
-  admin: 'qwe123',
-  admin1: 'qwe123',
-  admin2: 'qwe123',
-  admin4: 'qwe123',
-  admin5: 'qwe123',
+const users = ['alex', 'joyy', 'kiven', 'fred', 'erica', 'alan', 'matt', 'jeremy'];
+
+let userAuth = {
+  admin: {
+    password: '1234@qwer'
+  }
+};
+
+for (const user of users) {
+  userAuth[user] = {
+    password: 'qwe123'
+  }
 }
+
+module.exports = userAuth;

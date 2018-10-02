@@ -7,7 +7,7 @@ const jsonParser = bodyParser.json();
 
 const auth = (req, res, next) => {
   const { AdminName, Password } = req.body.data;
-  if(testAuthData[AdminName] == Password) {
+  if(testAuthData[AdminName].password == Password) {
     req.userInfo = {
       AdminName,
       SessId: 'suiyi'
@@ -16,7 +16,7 @@ const auth = (req, res, next) => {
   } else {
     res.json({
       err: '未授权登录'
-    })
+    });
   }
 }
 

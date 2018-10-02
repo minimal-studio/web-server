@@ -38,6 +38,6 @@ assets/zips
 assets/public/*
 assets/_admin/*
 
-runtime/dynamic-routres/for-next
+runtime/dynamic-routres/get-config-from-server
 
 _none

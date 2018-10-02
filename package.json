@@ -7,7 +7,7 @@
     "start:normal": "node ./system/app.js",
     "init": "git remote remove origin; git init; npm i",
     "update": "git pull remote master",
-    "start": "NODE_ENV=development nodemon --watch routers/ --watch system/ --watch dynamic-routres/ --exec npm run start:normal",
+    "start": "NODE_ENV=development nodemon --watch routers/ --watch system/ --watch runtime/dynamic-routres/ --exec npm run start:normal",
     "restartServer": "NODE_ENV=production pm2 restart uke-web-server",
     "zip": "sh ./zip.sh",
     "deploy": "NODE_ENV=production pm2 start ./system/app.js --name 'uke-web-server'",
