@@ -53,8 +53,8 @@ const checkProjAuth = (req, res, next) => {
   if(!username) return res.json({err: 'username is required'});
   if(!projId) return res.json({err: 'projId is required'});
   
-  let currProjConfig = db.get(`projects.${projId}`).value() || {};
-  let currAssetConfig = db.get(`assets.${assetId}`).value() || {};
+  let currProjConfig = db.get(`projects.${projId}`).value();
+  let currAssetConfig = db.get(`assets.${assetId}`).value();
 
   let assetConfig = {
     username,
@@ -62,7 +62,7 @@ const checkProjAuth = (req, res, next) => {
     asset: currAssetConfig,
   }
 
-  if(!!username && !!currProjConfig && (currProjConfig.founder === username || !!currProjConfig.collaborators[username])) {
+  if(username && currProjConfig && (currProjConfig.founder === username || currProjConfig.collaborators[username])) {
     assetConfig.isPass = true;
   } else {
     assetConfig.isPass = false;
@@ -310,7 +310,25 @@ const updateProject = [
       data: nextProj
     })
   }
-]
+];
+
+const removeAllAssets = (assetList) => {
+  let allActions = [];
+  
+  for (const assetId in assetList) {
+    if (assetList.hasOwnProperty(assetId)) {
+      // const currAsset = assetList[assetId];
+      allActions.push(new Promise((resolve, reject) => {
+        fs.unlink(path.join(zipAssetsStorePath, assetId + '.zip'), (err) => {
+          if(err) return reject(err);
+          resolve();
+        });
+      }));
+    }
+  }
+
+  return Promise.all(allActions);
+}
 
 /**
  * delete project
@@ -318,13 +336,33 @@ const updateProject = [
 const deleteProject = [
   jsonParser, checkProjAuth,
   (req, res) => {
-    // res.send('delete project')
-    let { project, asset } = req.assetConfig;
-    // console.log(project, asset)
-    // TODO: 删除记录，并且删除文件
-    res.json({
-      err: 'not yet.'
-    });
+    const { projId } = req.body;
+    const { project, asset } = req.assetConfig;
+
+    const assetDBObj = db.get(`assets`);
+
+    const assetsData = assetDBObj.value();
+    const assetList = findAll(assetsData, {belongto: projId});
+
+    db.update('assets', o => {
+      for (const id in o) {
+        if(o[id].belongto === projId) delete o[id];
+      }
+      return o;
+    }).write();
+    db.unset(`projects.${projId}`).write();
+
+    removeAllAssets(assetList)
+      .then((success) => {
+        res.json({
+          err: null,
+        });
+      })
+      .catch(err => {
+        res.json({
+          err: err + '',
+        });
+      });
   }
 ]
 
@@ -407,8 +445,10 @@ const handleUpload = [
   (req, res) => {
     if(!req.file) return res.json({err: 'no upload files'});
     const { founder, projId } = req.body;
+
     let targetProject = db.get(`projects.${projId}`).value();
     let { assetNumb } = targetProject;
+
     if(targetProject.founder == founder || !!targetProject.collaborators[founder]) {
       let { desc } = req.body;
       let currVersion = (+assetNumb || 0) + 1;
@@ -423,23 +463,29 @@ const handleUpload = [
         rollbackMark: '',
         founder
       };
+
       let releaseLog = {
         username: founder,
         type: 'createAsset'
       };
+
       db.set(`assets.${assetId}`, nextAssetState).write();
       db
         .update(`projects.${projId}.assetsCount`, n => (n || 0) + 1)
         .update(`projects.${projId}.assetNumb`, n => (n || 0) + 1)
         .write();
+
       audit(projId, releaseLog);
+
       if(currVersion > maxAssetCount) {
         clearAsset(targetProject);
       }
+
       return res.json({
         err: null,
         data: nextAssetState
       });
+
     } else {
       return res.json({
         err: 'You have no promission to update this project',
@@ -508,15 +554,34 @@ const getAutid = (req, res) => {
   }
 };
 
+const downloadAsset = (req, res) => {
+  let { assetId } = req.query;
+  if(!assetId) return res.json({err: 'need pass assetId'});
+  const fileName = assetId + '.zip';
+  const zipFile = path.join(zipAssetsStorePath, fileName);
+
+  res.set({
+    'Content-Type': 'application/octet-stream',
+    'Content-Disposition': 'attachment; filename=' + fileName
+  });
+
+  fs.createReadStream(zipFile).pipe(res);
+}
+
 deploymentRouter.put('/project', updateProject);
+
 deploymentRouter.post('/release', handleRelease);
 deploymentRouter.post('/rollback', handleRollback);
 deploymentRouter.post('/upload', handleUpload);
 deploymentRouter.post('/del-asset', delAsset);
-deploymentRouter.post('/del-project', deleteProject);
 deploymentRouter.post('/join', applyToJoin);
 deploymentRouter.post('/project', createProject);
 deploymentRouter.post('/approve', approveJoinToProject);
+
+deploymentRouter.delete('/project', deleteProject);
+deploymentRouter.delete('/assets', delAsset);
+
+deploymentRouter.get('/download-asset', downloadAsset);
 deploymentRouter.get('/assets', getAssets);
 deploymentRouter.get('/audit', getAutid);
 deploymentRouter.get('/ssh-host', getSshHosts);
