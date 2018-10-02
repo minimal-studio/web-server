@@ -218,7 +218,7 @@ const handleRelease = [
         let { projCode, scpSourceDir, scpTargetHost, scpTargetDir } = project;
         let sourcePath = path.join(staticServerPath, projCode, scpSourceDir, '*');
         let targetPath = path.join(scpTargetDir, projCode);
-        let scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${targetPath}'; scp -r ${sourcePath} ${scpTargetHost}:${targetPath}`;
+        let scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${targetPath}'; scp -rC ${sourcePath} ${scpTargetHost}:${targetPath}`;
         
         exec(scpCommand, (err) => {
           res.json({
