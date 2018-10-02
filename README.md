@@ -1,5 +1,7 @@
 # uke web server
 
+[![Build Status](https://travis-ci.org/SANGET/uke-web-server.svg?branch=master)](https://travis-ci.org/SANGET/uke-web-server)
+
 两层结构
 
 - system 系统服务，可以开启新服务
@@ -67,7 +69,16 @@ npm start // 使用 nodemon
 
 ### 部署
 
-TODO
+把项目压缩，然后 scp 到目标路径，解压并且 npm install，
+
+```shell
+# 压缩目录，然后自行 scp 到目标目录，准备好 node 和 pm2 环境
+npm run zip
+
+# 在部署服务器上
+npm i
+npm run deploy
+```
 
 -----
 
