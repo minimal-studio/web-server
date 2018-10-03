@@ -417,8 +417,8 @@ const approveJoinToProject = [
 const clearAsset = (project) => {
   return new Promise((resolve, reject) => {
     if(!project) reject('project is required.');
-    let asset = [...objToArr(db.get("assets").value())];
-    let delAsset = asset.slice(maxAssetCount);
+    let assets = [].concat(objToArr(db.get("assets").value(), null, 0));
+    let delAsset = assets.slice(maxAssetCount);
     delAsset.forEach(item => {
       let assetId = item.id;
       let unlinkFilePath = path.join(zipAssetsStorePath, assetId + '.zip');
@@ -501,7 +501,7 @@ const getAssets = (req, res) => {
   let { projId } = req.query;
   let assetListObjData = {};
   if(!projId) {
-    assetListObjData = db.get('assets').sortBy('createdDate').value();
+    assetListObjData = db.get('assets').sortBy('version').value();
     return res.json(objToArr(assetsObj));
   } else {
     let assetsData = db.get('assets').value();

@@ -1,15 +1,17 @@
 
 const _ = require('lodash');
 
+const { maxAssetCount } = require('../config');
+
 /**
  * convert obj to array
  */
-function objToArr(obj, filter, limit = 30) {
+function objToArr(obj, filter, limit = maxAssetCount) {
   let hasFilter = _.isFunction(filter);
   let result = [];
   let taked = 0;
   for (const key in obj) {
-    if(taked == limit) return;
+    if(limit !== 0 && taked == limit) break;
     let item = Object.assign({}, obj[key]);
     hasFilter ? item = filter({...item}) || item : null;
     result.push(item);
