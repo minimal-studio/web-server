@@ -15,6 +15,8 @@ const staticServerPath = path.join(cwd, './assets/public');
 const adminResourcePath = path.join(cwd, './assets', adminDirName);
 const zipAssetsStorePath = path.join(cwd, './assets/zips');
 
+const remoteZipStorePath = '/var/front-end-zip';
+
 if(!fs.existsSync(dbStorePath)) {
   fse.mkdirpSync(zipAssetsStorePath);
   fse.mkdirpSync(adminResourcePath);
@@ -63,6 +65,7 @@ module.exports = {
   dbStorePath,
   staticServerPath,
   zipAssetsStorePath,
+  remoteZipStorePath,
   maxAssetCount,
   adminResourcePath,
   sshPath,

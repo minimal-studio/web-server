@@ -9,7 +9,7 @@ const { exec } = require('child_process');
 
 const sshParser = require('./ssh-config-parser');
 const {
-  db, getDeployPath, zipAssetsStorePath, 
+  db, getDeployPath, zipAssetsStorePath, remoteZipStorePath,
   audit, getAudit, maxAssetCount, sshPath,
   staticServerPath
 } = require('./config');
@@ -209,18 +209,24 @@ const handleRelease = [
       
       if(isCallHook) {
         // TODO: 完善通知机制
-  
+
       }
-  
+
       let execRes;
-  
+
       if(isExecScp) {
-        let { projCode, scpSourceDir, scpTargetHost, scpTargetDir } = project;
-        let sourcePath = path.join(staticServerPath, projCode, scpSourceDir, '*');
+        let { projCode, scpSourceDir = '', scpTargetHost, scpTargetDir } = project;
+        // let sourcePath = path.join(staticServerPath, projCode, scpSourceDir, '*');
+        let zipFileName = asset.id + '.zip';
+        let zipFilePath = path.join(zipAssetsStorePath, zipFileName);
         let targetPath = path.join(scpTargetDir, projCode);
-        let scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${targetPath}'; scp -rC ${sourcePath} ${scpTargetHost}:${targetPath}`;
+        let remoteZipFilePath = path.join(remoteZipStorePath, zipFileName);
+        let remoteSrourceFilePath = scpSourceDir ? path.join(targetPath, scpSourceDir, '*') : null;
+        let mvToPath = targetPath;
+        let scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${remoteZipStorePath}'; scp ${zipFilePath} ${scpTargetHost}:${remoteZipStorePath}; ssh ${scpTargetHost} 'mkdir -p ${targetPath}; unzip -o ${remoteZipFilePath} -d ${targetPath}; ${remoteSrourceFilePath ? `cp -rf ${remoteSrourceFilePath} ${mvToPath}` : ''}'`;
         
         exec(scpCommand, (err) => {
+          // console.log(err)
           res.json({
             err: err ? (err + '') : null
           });
