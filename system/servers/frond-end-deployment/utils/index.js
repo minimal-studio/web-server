@@ -6,7 +6,7 @@ const { maxAssetCount } = require('../config');
 /**
  * convert obj to array
  */
-function objToArr(obj, filter, limit = maxAssetCount) {
+const objToArr = (obj, filter, limit = maxAssetCount) => {
   let hasFilter = _.isFunction(filter);
   let result = [];
   let taked = 0;
@@ -20,7 +20,7 @@ function objToArr(obj, filter, limit = maxAssetCount) {
   return result.reverse();
 }
 
-function findAll(obj, findParams, filter) {
+const findAll = (obj, findParams, filter) => {
   let hasFilter = _.isFunction(filter);
   let res = {};
   for (const key in obj) {
@@ -40,7 +40,18 @@ function findAll(obj, findParams, filter) {
   return res;
 }
 
+const entityMerge = (reqBody, entity) => {
+  let res = {...entity};
+  for (const entityKey in entity) {
+    if (reqBody.hasOwnProperty(entityKey)) {
+      res[entityKey] = reqBody[entityKey];
+    }
+  }
+  return res;
+}
+
 module.exports = {
   objToArr,
-  findAll
+  findAll,
+  entityMerge
 }

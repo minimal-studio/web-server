@@ -14,8 +14,11 @@ const {
   staticServerPath
 } = require('./config');
 const unzipFile = require('./unzip');
-const { objToArr, findAll } = require('./utils');
+const { objToArr, findAll, entityMerge } = require('./utils');
 const uploader = require('./uploader');
+
+const projectEntity = require('./entities/project');
+const assetEntity = require('./entities/asset');
 
 const upload = uploader(zipAssetsStorePath);
 
@@ -117,34 +120,30 @@ const getProjectList = (req, res) => {
 const createProject = [
   jsonParser, (req, res) => {
     const {
-      username, projName, projCode, projDesc, webhook,
-      scpTargetHost, scpSourceDir, scpTargetDir
+      username, projName, projCode, projDesc
     } = req.body;
+
     let isProjExist = !!db.get('projects').find({
       projCode
     }).value();
+
     if(isProjExist) return res.json({err: projCode + ' is exist'});
+
     if(!username || !projCode || !projName) return res.json({
       err: true,
       desc: 'username, projName, projCode are required.'
     });
+
     const createProjId = uuidv3(projName + projCode + username, uuidv3.DNS);
-    // const { deployStorePath } = getAssetsPath(projCode);
-  
-    let newProj = {
-      id: createProjId,
-      projName,
-      createdDate: Date.now(),
-      projCode,
-      projDesc,
-      webhook,
-      scpTargetHost, scpSourceDir, scpTargetDir,
-      founder: username,
-      collaborators: {},
-      collaboratorApplies: [],
-    };
     
-    db.set(`projects.${createProjId}`, newProj).write();
+    let newProject = entityMerge(req.body, projectEntity);
+    Object.assign(newProject, {
+      id: createProjId,
+      createdDate: Date.now(),
+      founder: username
+    });
+    
+    db.set(`projects.${createProjId}`, newProject).write();
     audit(createProjId, {
       username,
       note: projDesc,
@@ -153,7 +152,7 @@ const createProject = [
   
     res.json({
       err: null,
-      data: newProj
+      data: newProject
     });
   }
 ]
@@ -215,15 +214,38 @@ const handleRelease = [
       let execRes;
 
       if(isExecScp) {
-        let { projCode, scpSourceDir = '', scpTargetHost, scpTargetDir } = project;
-        // let sourcePath = path.join(staticServerPath, projCode, scpSourceDir, '*');
-        let zipFileName = asset.id + '.zip';
-        let zipFilePath = path.join(zipAssetsStorePath, zipFileName);
+        let { projCode, scpSourceDir = '', scpTargetHost, scpTargetDir, pushMode = 'push-files' } = project;
         let targetPath = path.join(scpTargetDir, projCode);
-        let remoteZipFilePath = path.join(remoteZipStorePath, zipFileName);
-        let remoteSrourceFilePath = scpSourceDir ? path.join(targetPath, scpSourceDir, '*') : null;
-        let mvToPath = targetPath;
-        let scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${remoteZipStorePath}'; scp ${zipFilePath} ${scpTargetHost}:${remoteZipStorePath}; ssh ${scpTargetHost} 'mkdir -p ${targetPath}; unzip -o ${remoteZipFilePath} -d ${targetPath}; ${remoteSrourceFilePath ? `cp -rf ${remoteSrourceFilePath} ${mvToPath}` : ''}'`;
+        let scpCommand = '';
+
+        switch (pushMode) {
+          // 把资源压缩包推送到目标服务器再解压
+          case 'push-zip':
+            let zipFileName = asset.id + '.zip';
+            let zipFilePath = path.join(zipAssetsStorePath, zipFileName);
+            let remoteSrourceFilePath = scpSourceDir ? path.join(targetPath, scpSourceDir, '*') : null;
+            let remoteZipFilePath = path.join(remoteZipStorePath, zipFileName);
+            let mvToPath = targetPath;
+
+            scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${remoteZipStorePath}';` + 
+                         `scp ${zipFilePath} ${scpTargetHost}:${remoteZipStorePath};` + 
+                         `ssh ${scpTargetHost} 'mkdir -p ${targetPath};` + 
+                         `unzip -o ${remoteZipFilePath} -d ${targetPath};` + 
+                         `${remoteSrourceFilePath ? `cp -rf ${remoteSrourceFilePath} ${mvToPath}` : ''}'`;
+            break;
+          // 把解压了的资源推送到目标服务器
+          case 'push-files':
+            let sourcePath = path.join(staticServerPath, projCode, scpSourceDir, '*');
+
+            scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${targetPath}';` +
+                         `scp -rB ${sourcePath} ${scpTargetHost}:${targetPath};`;
+            break;
+        }
+        console.log(scpCommand)
+
+        if(!scpCommand) return res.json({
+          err: '请检查 pushMode 是否正确: push-zip | push-files'
+        });
         
         exec(scpCommand, (err) => {
           // console.log(err)
@@ -301,15 +323,13 @@ const updateProject = [
   jsonParser, checkProjAuth,
   (req, res) => {
     let { project } = req.assetConfig;
-    let {
-      projCode, projName, projDesc, webhook, host,
-      scpTargetHost, scpSourceDir, scpTargetDir
-    } = req.body;
-    let nextProj = Object.assign({}, project, {
+
+    let nextProj = entityMerge({
+      ...project,
+      ...req.body,
       motifyDate: Date.now(),
-      projCode, projName, projDesc, webhook, host,
-      scpTargetHost, scpSourceDir, scpTargetDir
-    });
+    }, projectEntity);
+
     db.set(`projects.${project.id}`, nextProj).write();
     res.json({
       err: null,
@@ -343,7 +363,6 @@ const deleteProject = [
   jsonParser, checkProjAuth,
   (req, res) => {
     const { projId } = req.body;
-    const { project, asset } = req.assetConfig;
 
     const assetDBObj = db.get(`assets`);
 
@@ -399,8 +418,7 @@ const applyToJoin = [
 const approveJoinToProject = [
   jsonParser, checkProjAuth,
   (req, res) => {
-    let { project, asset } = req.assetConfig;
-    let { username, projId, applicant, updatable, deletable, releasable } = req.body;
+    let { projId, applicant, updatable, deletable, releasable } = req.body;
     if(!applicant) return res.json({
       err: 'need to pass applicant'
     });
@@ -456,18 +474,14 @@ const handleUpload = [
     let { assetNumb } = targetProject;
 
     if(targetProject.founder == founder || !!targetProject.collaborators[founder]) {
-      let { desc } = req.body;
       let currVersion = (+assetNumb || 0) + 1;
       let assetId = req.file.filename.split('.')[0];
       let nextAssetState = {
+        ...entityMerge({...req.body}, assetEntity),
         belongto: projId,
         id: assetId,
         createdDate: Date.now(),
-        desc: desc,
-        version: currVersion,
-        isRollback: false,
-        rollbackMark: '',
-        founder
+        version: currVersion
       };
 
       let releaseLog = {
@@ -523,7 +537,6 @@ const getAssets = (req, res) => {
  * query assets
  */
 const delAsset = [jsonParser, checkProjAuth, (req, res) => {
-  let { project } = req.assetConfig;
   let { projId, assetId, username } = req.body;
   let unlinkFilePath = path.join(zipAssetsStorePath, assetId + '.zip');
   fs.unlink(unlinkFilePath, (err) => {
