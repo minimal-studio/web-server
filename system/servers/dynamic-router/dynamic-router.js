@@ -63,7 +63,7 @@ const createRoute = () => {
 
 dynamicRouter.use('/__reload_module/:moduleName', reloadModule);
 dynamicRouter.use('/__list', listDyrs);
-dynamicRouter.use('/:route', dynamicRoute);
+dynamicRouter.all('/:route', dynamicRoute);
 dynamicRouter.use('/', rootRoute);
 
 module.exports = dynamicRouter;
