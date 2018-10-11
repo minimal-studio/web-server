@@ -24,7 +24,7 @@ const findAll = (obj, findParams, filter) => {
   let hasFilter = _.isFunction(filter);
   let res = {};
   for (const key in obj) {
-    const item = obj[key];
+    let item = obj[key];
     for (const targetKey in findParams) {
       const targetVal = findParams[targetKey];
       if(typeof targetVal == 'function') {
