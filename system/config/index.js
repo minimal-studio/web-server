@@ -18,6 +18,6 @@ const config = {
   adminDirName: '_admin',
   dyrPath: path.join(process.cwd(), './runtime/dynamic-routres'),
   publicStaticPaths: ['public', 'pb'],
-}
+};
 
 module.exports = config;

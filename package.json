@@ -3,14 +3,14 @@
   "version": "0.3.0",
   "description": "",
   "scripts": {
-    "babel": "babel-node ./system/app.js --presets es2015",
-    "start:normal": "node ./system/app.js",
+    "babel": "babel-node ./system --presets es2015",
+    "start:normal": "node ./system",
     "init": "git remote remove origin; git init; npm i",
     "update": "git pull remote master",
     "start": "NODE_ENV=development nodemon --watch routers/ --watch system/ --watch runtime/dynamic-routres/ --exec npm run start:normal",
     "restartServer": "NODE_ENV=production pm2 restart uke-web-server",
     "zip": "sh ./zip.sh",
-    "deploy": "NODE_ENV=production pm2 start ./system/app.js --name 'uke-web-server'",
+    "deploy": "NODE_ENV=production pm2 start ./system --name 'uke-web-server'",
     "test": "mocha"
   },
   "repository": {

@@ -17,7 +17,7 @@ let path = require('path');
  *    可以通过编写动态路由响应
  */
 let tmplPath = path.join(process.cwd(), './assets/public/admin/html/index.ejs');
-let ejsOptions = {}
+let ejsOptions = {};
 
 let adminRouter = async (req, res) => {
   let html = await ejs.renderFile(tmplPath, {
@@ -29,6 +29,6 @@ let adminRouter = async (req, res) => {
     }
   }, ejsOptions);
   res.send(html);
-}
+};
 
 module.exports = adminRouter;

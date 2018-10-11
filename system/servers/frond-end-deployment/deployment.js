@@ -521,7 +521,7 @@ const getAssets = (req, res) => {
   let assetListObjData = {};
   if(!projId) {
     assetListObjData = db.get('assets').sortBy('version').value();
-    return res.json(objToArr(assetsObj));
+    return res.json(objToArr(assetListObjData));
   } else {
     let assetsData = db.get('assets').value();
     assetListObjData = findAll(assetsData, {belongto: projId});

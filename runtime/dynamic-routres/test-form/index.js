@@ -1,4 +1,4 @@
-let testRouter = (req, res) => {
+const testRouter = (req, res) => {
   setTimeout(() => {
     res.json({
       err: null,

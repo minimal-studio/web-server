@@ -1,10 +1,11 @@
+const koa = require('koa');
+const compress = require('koa-compress');
+const helmet = require('koa-helmet');
+const cors = require('@koa/cors');
+
 const appFactory = () => {
-  const koa = require('koa');
-  const compress = require('koa-compress');
-  const helmet = require('koa-helmet');
-  const cors = require('@koa/cors');
   
-  const app = koa();
+  const app = new koa();
   
   app.use(helmet());
   app.use(compress());

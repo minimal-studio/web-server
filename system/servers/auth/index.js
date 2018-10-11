@@ -1,18 +1,21 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const Router = require('koa-router');
+const bodyParser = require('koa-bodyparser');
+
 const testAuthData = require('./test-auth-data');
 
-let authApp = express.Router();
-const jsonParser = bodyParser.json();
+const authRouter = new Router();
 
-const auth = (req, res, next) => {
-  const { AdminName, Password } = req.body.data;
+// authRouter.use(bodyParser());
+
+const auth = async (ctx, next) => {
+  const { res } = ctx;
+  const { AdminName, Password } = ctx.body.data;
   if(testAuthData[AdminName].password == Password) {
-    req.userInfo = {
+    ctx.userInfo = {
       AdminName,
       SessId: 'suiyi'
     };
-    return next();
+    await next();
   } else {
     res.json({
       err: '未授权登录'
@@ -20,16 +23,9 @@ const auth = (req, res, next) => {
   }
 };
 
-authApp.get('/auth-login', (req, res) => {
-  res.json({
-    err: null,
-    data: {}
-  });
-});
-
-authApp.post('/auth-login', [jsonParser, auth], (req, res) => {
-  const { userInfo } = req;
-  res.json({
+authRouter.post('/auth-login', bodyParser, auth, async (ctx) => {
+  const { userInfo } = ctx;
+  ctx.res.json({
     err: null,
     data: {
       userInfo
@@ -38,6 +34,6 @@ authApp.post('/auth-login', [jsonParser, auth], (req, res) => {
 });
 
 // 注册到根路由的标记
-authApp.isForRootRouter = true;
+authRouter.toRoot = true;
 
-module.exports = authApp;
+module.exports = authRouter;
