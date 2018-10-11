@@ -1,5 +1,5 @@
-let router = async (req, res) => {
-  res.send('ok');
+let router = async (ctx) => {
+  ctx.body = 'ok';
 };
 
 module.exports = router;

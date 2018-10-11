@@ -1,5 +1,5 @@
-let notFound = (req, res) => {
-  res.send('not found');
+let notFound = async (ctx) => {
+  ctx.body = 'not found';
 };
 
 module.exports = notFound;

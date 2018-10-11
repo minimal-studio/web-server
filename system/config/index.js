@@ -17,7 +17,10 @@ const config = {
   runtimeDir: 'runtime',
   adminDirName: '_admin',
   dyrPath: path.join(process.cwd(), './runtime/dynamic-routres'),
-  publicStaticPaths: ['public', 'pb'],
+  publicStaticServerConfig: {
+    route: '/public',
+    assetPath: path.join(process.cwd(), './assets/public'),
+  }
 };
 
 module.exports = config;

@@ -1,11 +1,8 @@
-let express = require('express');
-let dynamicRoute = require('./dynamic-router');
+const Router = require('koa-router');
+const dynamicRoute = require('./dynamic-router');
 
-let dyApp = express.Router();
+const dyApp = new Router();
 
-dyApp.use(dynamicRoute);
-
-// 外层的路由的别名
-dyApp.alias = 'dyr';
+dyApp.use(dynamicRoute.routes());
 
 module.exports = dyApp;

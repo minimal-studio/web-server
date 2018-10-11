@@ -19,7 +19,7 @@ let path = require('path');
 let tmplPath = path.join(process.cwd(), './assets/public/admin/html/index.ejs');
 let ejsOptions = {};
 
-let adminRouter = async (req, res) => {
+let adminRouter = async (ctx) => {
   let html = await ejs.renderFile(tmplPath, {
     user: {
       name: 'alex'
@@ -28,7 +28,7 @@ let adminRouter = async (req, res) => {
       title: 'haha'
     }
   }, ejsOptions);
-  res.send(html);
+  ctx.body = html;
 };
 
 module.exports = adminRouter;

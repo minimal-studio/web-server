@@ -1,7 +1,7 @@
-let adminRouter = async (req, res) => {
-  res.json({
+let adminRouter = async (ctx) => {
+  ctx.body = {
     "user": 'Alex'
-  });
+  };
 };
 
 module.exports = adminRouter;

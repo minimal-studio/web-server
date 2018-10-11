@@ -1,65 +1,63 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const Router = require('koa-router');
+const bodyParser = require('koa-bodyparser');
 const path = require('path');
 const fs = require('fs');
+
 const notFound = require('../../routers/notfound');
 const { dyrPath } = require('../../config');
 
-const dynamicRouter = express.Router();
+const dynamicRouter = new Router();
 
-const rootRoute = (req, res) => {
-  res.send('root');
-}
+const rootRoute = async (ctx) => {
+  ctx.body = 'root';
+};
 
 const getDynamicRouterModule = (route) => {
   return path.join(dyrPath, route);
-}
+};
 
-const dynamicRoute = (req, res) => {
-  const dynamicRoutersPath = getDynamicRouterModule(req.params.route);
+const dynamicRoute = async (ctx) => {
+  const { params } = ctx;
+  const dynamicRoutersPath = getDynamicRouterModule(params.route);
   try {
     const currRouter = require(dynamicRoutersPath);
     // if(currRouter.subRouter) dynamicRouter.use(currRouter.subRouter);
-    currRouter(req, res);
+    return await currRouter(ctx);
   } catch(e) {
-    notFound(req, res);
+    return await notFound(ctx);
   }
-}
+};
 
-const reloadModule = (req, res) => {
-  const moduleName = req.params.moduleName;
-  if(!moduleName) return res.send('no module-name');
+const reloadModule = async (ctx) => {
+  const moduleName = ctx.params.moduleName;
+  if(!moduleName) return ctx.body = 'no module-name';
   const dynamicRoutersPath = getDynamicRouterModule(moduleName);
 
   const moduleId = require.resolve(dynamicRoutersPath);
 
   try {
     delete require.cache[moduleId];
-    res.send('ok');
+    ctx.body = 'ok';
   } catch(e) {
     console.log(e);
-    res.send(e + '');
+    ctx.body = e + '';
   }
-}
+};
 
-const listDyrs = (req, res) => {
+const listDyrs = async (ctx) => {
   try {
     let pathInfos = fs.readdirSync(dyrPath);
-    res.json({
+    ctx.body = {
       err: null,
       data: pathInfos
-    });
+    };
   } catch(e) {
     console.log(e + '');
-    res.json({
+    ctx.body = {
       err: e + ''
-    });
+    };
   }
-}
-
-const createRoute = () => {
-  
-}
+};
 
 dynamicRouter.use('/__reload_module/:moduleName', reloadModule);
 dynamicRouter.use('/__list', listDyrs);

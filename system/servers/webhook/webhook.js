@@ -1,18 +1,15 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const bodyParser = require('koa-bodyParser');
+const Router = require('koa-router');
 
-let webhookRouter = express.Router();
+const webhookRouter = new Router();
 
-const jsonParser = bodyParser.json();
-const urlencodedParser = bodyParser.urlencoded({ extended: false });
+const resFilter = async (ctx, next) => {
+  ctx.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+  ctx.header('Expires', '-1');
+  ctx.header('Pragma', 'no-cache');
+  await next();
+};
 
-const resFilter = (req, res, next) => {
-  res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-  res.header('Expires', '-1');
-  res.header('Pragma', 'no-cache');
-  next();
-}
-
-webhookRouter.use(resFilter);
+webhookRouter.use('/', resFilter);
 
 module.exports = webhookRouter;

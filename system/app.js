@@ -1,37 +1,31 @@
-// const koa = require('koa');
-// const compress = require('koa-compress');
-// const helmet = require('koa-helmet');
-// const cors = require('@koa/cors');
 const logger = require('koa-morgan');
 const fs = require('fs');
 const path = require('path');
 const Router = require('koa-router');
 
-const app = require('./app-factory')();
+const app = require('./factories/app-server')();
 
 // const dynamicRoute = require('../routers/dynamic-router');
-const { mainServerPort, systemDir } = require('./config');
-const publicRouter = require('./routers/public-assets');
+const { mainServerPort, systemDir, publicStaticServerConfig } = require('./config');
+const staticServer = require('./factories/static-server');
 // const processUpdater = require('../routers/process-updater');
 const handleError = require('./routers/error-handle');
 
 const router = new Router();
 
+const publicRouter = staticServer(publicStaticServerConfig);
+
 const serversDir = 'servers';
 
-// app.use(helmet());
-// app.use(compress());
-// app.use(cors());
-
-let accessLogStream = fs.createWriteStream(path.join(process.cwd(), '/runtime/web-server.log'), {flags: 'a'});
+const accessLogStream = fs.createWriteStream(path.join(process.cwd(), '/runtime/web-server.log'), {flags: 'a'});
 app.use(logger('combined', {stream: accessLogStream}));
 
-let pathInfos = fs.readdirSync(path.join(__dirname, serversDir));
-let ignoreFirld = ['index.js', 'config'];
+const pathInfos = fs.readdirSync(path.join(__dirname, serversDir));
+const ignoreFirld = ['index.js', 'config', 'frond-end-deployment'];
 pathInfos.filter(dirname => ignoreFirld.indexOf(dirname) === -1).forEach((dirname) => {
-  let currServer = require('./' + path.join(serversDir, dirname));
-  let serverPath = currServer.alias || dirname;
-  let startSubServer = currServer.start;
+  const currServer = require('./' + path.join(serversDir, dirname));
+  const serverPath = currServer.alias || dirname;
+  const startSubServer = currServer.start;
   if(startSubServer) {
     try {
       startSubServer();
@@ -45,23 +39,16 @@ pathInfos.filter(dirname => ignoreFirld.indexOf(dirname) === -1).forEach((dirnam
   }
 });
 
-// app.use('/sub', webServerApp);
-// app.get('/', function (req, res) {
-//   res.send("This is the '/' route in main_app");
-// });
-
-// app.use(dynamicRoute);
-
 app.use(publicRouter);
 
 app.use(router.routes());
 
-// app.use(processUpdater);
-
 // 最后处理所有错误
-app.use(async (ctx, next) => {
-  ctx.res.status(404).send('non');
-});
+// app.use(async (ctx, next) => {
+//   // console.log(ctx.response)
+//   // ctx.status = 404;
+//   // ctx.body('non');
+// });
 
 app.listen(mainServerPort, async (err) => {
   if(err) return console.log(err);

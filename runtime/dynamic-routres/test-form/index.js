@@ -1,9 +1,9 @@
-const testRouter = (req, res) => {
+const testRouter = async (ctx) => {
   setTimeout(() => {
-    res.json({
+    ctx.body = {
       err: null,
       data: {}
-    });
+    };
   }, 1000);
 }
 

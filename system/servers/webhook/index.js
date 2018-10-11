@@ -1,22 +1,13 @@
-let express = require('express');
-let compression = require('compression');
-let helmet = require('helmet');
-let cors = require('cors')
+const app = require('../../factories/app-server')();
 
 let { webhookPort } = require('../../config');
-
 let webhook = require('./webhook');
 
 const startServer = () => {
-  let app = express();
-  app.use(helmet());
-  app.use(compression());
-  app.use(cors());
-  
-  app.use(webhook);
+  app.use(webhook.routes());
 
-  app.listen(webhookPort, () => {
-    console.log('webhook server started, at port: ' + webhookPort)
+  app.listen(webhookPort, async () => {
+    console.log('webhook server started, at port: ' + webhookPort);
   });
-}
+};
 module.exports.start = startServer;
