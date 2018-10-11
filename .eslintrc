@@ -1,6 +1,5 @@
 {
   "extends": [
-    "airbnb",
     "eslint:recommended"
   ],
   "parser": "babel-eslint",
@@ -10,7 +9,7 @@
   },
   "rules": {
     "indent": ["error", 2],
-    "semi": ["error", "always"],
+    "semi": [1, "always"],
     "no-unused-vars": [
       1,
       {
@@ -18,6 +17,7 @@
       }
     ],
     "import/prefer-default-export": 0,
+    "no-case-declarations": 0,
     "no-console": 0
   }
  }

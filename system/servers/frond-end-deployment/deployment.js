@@ -38,7 +38,7 @@ deploymentRouter.use(resFilter);
 
 const getSSHHostList = () => {
   try {
-    let readRes = fs.readFileSync(sshPath, "utf8")
+    let readRes = fs.readFileSync(sshPath, "utf8");
     return sshParser(readRes);
   } catch(e) {
     return null;
@@ -63,7 +63,7 @@ const checkProjAuth = (req, res, next) => {
     username,
     project: currProjConfig,
     asset: currAssetConfig,
-  }
+  };
 
   if(username && currProjConfig && (currProjConfig.founder === username || currProjConfig.collaborators[username])) {
     assetConfig.isPass = true;
@@ -91,19 +91,19 @@ const getProjectList = (req, res) => {
   } else {
     let projectObj = db.get(`projects`).value();
     let projectData = {};
-    if(!!range) {
+    if(range) {
       switch (range) {
-        case 'all':
-          projectData = projectObj;
-          break;
-        case 'me':
-          projectData = findAll(projectObj, {founder: user});
-          break;
-        case 'join':
-          projectData = findAll(projectObj, {collaborators: (o) => {
-            return o.collaborators.hasOwnProperty(user);
-          }});
-          break;
+      case 'all':
+        projectData = projectObj;
+        break;
+      case 'me':
+        projectData = findAll(projectObj, {founder: user});
+        break;
+      case 'join':
+        projectData = findAll(projectObj, {collaborators: (o) => {
+          return o.collaborators.hasOwnProperty(user);
+        }});
+        break;
       }
     }
     result = objToArr(projectData);
@@ -155,7 +155,7 @@ const createProject = [
       data: newProject
     });
   }
-]
+];
 
 const releaseAsset = ({ project, asset }) => {
   let zipFilePath = path.join(zipAssetsStorePath, asset.id + '.zip');
@@ -219,29 +219,29 @@ const handleRelease = [
         let scpCommand = '';
 
         switch (pushMode) {
-          // 把资源压缩包推送到目标服务器再解压
-          case 'push-zip':
-            let zipFileName = asset.id + '.zip';
-            let zipFilePath = path.join(zipAssetsStorePath, zipFileName);
-            let remoteSrourceFilePath = scpSourceDir ? path.join(targetPath, scpSourceDir, '*') : null;
-            let remoteZipFilePath = path.join(remoteZipStorePath, zipFileName);
-            let mvToPath = targetPath;
+        // 把资源压缩包推送到目标服务器再解压
+        case 'push-zip':
+          let zipFileName = asset.id + '.zip';
+          let zipFilePath = path.join(zipAssetsStorePath, zipFileName);
+          let remoteSrourceFilePath = scpSourceDir ? path.join(targetPath, scpSourceDir, '*') : null;
+          let remoteZipFilePath = path.join(remoteZipStorePath, zipFileName);
+          let mvToPath = targetPath;
 
-            scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${remoteZipStorePath}';` + 
+          scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${remoteZipStorePath}';` + 
                          `scp ${zipFilePath} ${scpTargetHost}:${remoteZipStorePath};` + 
                          `ssh ${scpTargetHost} 'mkdir -p ${targetPath};` + 
                          `unzip -o ${remoteZipFilePath} -d ${targetPath};` + 
                          `${remoteSrourceFilePath ? `cp -rf ${remoteSrourceFilePath} ${mvToPath}` : ''}'`;
-            break;
+          break;
           // 把解压了的资源推送到目标服务器
-          case 'push-files':
-            let sourcePath = path.join(staticServerPath, projCode, scpSourceDir, '*');
+        case 'push-files':
+          let sourcePath = path.join(staticServerPath, projCode, scpSourceDir, '*');
 
-            scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${targetPath}';` +
+          scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${targetPath}';` +
                          `scp -rB ${sourcePath} ${scpTargetHost}:${targetPath};`;
-            break;
+          break;
         }
-        console.log(scpCommand)
+        console.log(scpCommand);
 
         if(!scpCommand) return res.json({
           err: '请检查 pushMode 是否正确: push-zip | push-files'
@@ -269,7 +269,7 @@ const handleRelease = [
       });
     });
   }
-]
+];
 
 /**
  * rollback
@@ -314,7 +314,7 @@ const handleRollback = [
       });
     });
   }
-]
+];
 
 /**
  * update project whit simple auth
@@ -334,7 +334,7 @@ const updateProject = [
     res.json({
       err: null,
       data: nextProj
-    })
+    });
   }
 ];
 
@@ -354,7 +354,7 @@ const removeAllAssets = (assetList) => {
   }
 
   return Promise.all(allActions);
-}
+};
 
 /**
  * delete project
@@ -389,7 +389,7 @@ const deleteProject = [
         });
       });
   }
-]
+];
 
 /**
  * 加入协作
@@ -410,7 +410,7 @@ const applyToJoin = [
       err: null
     });
   }
-]
+];
 
 /**
  * 加入协作
@@ -451,14 +451,14 @@ const clearAsset = (project) => {
         let releaseLog = {
           username: 'system',
           type: 'systemDeleteAsset'
-        }
+        };
         db.unset(`assets.${assetId}`).write();
         db.update(`projects.${project.id}.assetsCount`, n => n - 1).write();
         audit(project.id, releaseLog);
         resolve();
       });
     });
-  })
+  });
 };
 
 /**
@@ -522,7 +522,7 @@ const getAssets = (req, res) => {
   let assetListObjData = {};
   if(!projId) {
     assetListObjData = db.get('assets').sortBy('version').value();
-    return res.json(objToArr(assetsObj));
+    return res.json(objToArr(assetListObjData));
   } else {
     let assetsData = db.get('assets').value();
     assetListObjData = findAll(assetsData, {belongto: projId});
@@ -546,7 +546,7 @@ const delAsset = [jsonParser, checkProjAuth, (req, res) => {
     let releaseLog = {
       username,
       type: 'deleteAsset'
-    }
+    };
     db.unset(`assets.${assetId}`).write();
     db.update(`projects.${projId}.assetsCount`, n => n - 1).write();
     audit(projId, releaseLog);
@@ -564,7 +564,7 @@ const getAutid = (req, res) => {
   if(!projId) {
     res.json({
       err: 'need projId.'
-    })
+    });
   } else {
     res.json({
       err: null,
@@ -585,7 +585,7 @@ const downloadAsset = (req, res) => {
   });
 
   fs.createReadStream(zipFile).pipe(res);
-}
+};
 
 deploymentRouter.put('/project', updateProject);
 
