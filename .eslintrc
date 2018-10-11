@@ -16,6 +16,7 @@
         "vars": "all", "args": "after-used", "ignoreRestSiblings": false
       }
     ],
+    "no-case-declarations": 0,
     "import/prefer-default-export": 0,
     "no-console": 0
   }
