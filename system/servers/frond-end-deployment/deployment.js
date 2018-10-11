@@ -106,7 +106,7 @@ const getProjectList = (req, res) => {
         break;
       }
     }
-    result = objToArr(projectData);
+    result = objToArr(projectData, null, 0);
   }
   res.json({
     err: null,
