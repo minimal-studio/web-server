@@ -106,7 +106,7 @@ const getProjectList = (req, res) => {
         break;
       }
     }
-    result = objToArr(projectData);
+    result = objToArr(projectData, null, 0);
   }
   res.json({
     err: null,
@@ -228,17 +228,17 @@ const handleRelease = [
           let mvToPath = targetPath;
 
           scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${remoteZipStorePath}';` + 
-                        `scp ${zipFilePath} ${scpTargetHost}:${remoteZipStorePath};` + 
-                        `ssh ${scpTargetHost} 'mkdir -p ${targetPath};` + 
-                        `unzip -o ${remoteZipFilePath} -d ${targetPath};` + 
-                        `${remoteSrourceFilePath ? `cp -rf ${remoteSrourceFilePath} ${mvToPath}` : ''}'`;
+                       `scp ${zipFilePath} ${scpTargetHost}:${remoteZipStorePath};` + 
+                       `ssh ${scpTargetHost} 'mkdir -p ${targetPath};` + 
+                       `unzip -o ${remoteZipFilePath} -d ${targetPath};` + 
+                       `${remoteSrourceFilePath ? `cp -rf ${remoteSrourceFilePath} ${mvToPath}` : ''}'`;
           break;
-        // 把解压了的资源推送到目标服务器
         case 'push-files':
+          // 把解压了的资源推送到目标服务器
           let sourcePath = path.join(staticServerPath, projCode, scpSourceDir, '*');
 
           scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${targetPath}';` +
-                        `scp -rB ${sourcePath} ${scpTargetHost}:${targetPath};`;
+                       `scp -rB ${sourcePath} ${scpTargetHost}:${targetPath};`;
           break;
         }
 
