@@ -1,4 +1,3 @@
-let express = require('express');
 let ejs = require('ejs');
 let path = require('path');
 

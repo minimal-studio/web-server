@@ -1,5 +1,5 @@
 const express = require('express');
-const bodyParser = require('body-parser')
+const bodyParser = require('body-parser');
 const testAuthData = require('./test-auth-data');
 
 let authApp = express.Router();
@@ -11,14 +11,14 @@ const auth = (req, res, next) => {
     req.userInfo = {
       AdminName,
       SessId: 'suiyi'
-    }
+    };
     return next();
   } else {
     res.json({
       err: '未授权登录'
     });
   }
-}
+};
 
 authApp.get('/auth-login', (req, res) => {
   res.json({
@@ -38,6 +38,6 @@ authApp.post('/auth-login', [jsonParser, auth], (req, res) => {
 });
 
 // 注册到根路由的标记
-authApp.isForRootRouter = true
+authApp.isForRootRouter = true;
 
 module.exports = authApp;

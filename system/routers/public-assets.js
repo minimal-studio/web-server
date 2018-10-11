@@ -17,12 +17,12 @@ let options = {
   maxAge: '1d',
   redirect: true,
   setHeaders: function (res, path, stat) {
-    res.set('x-timestamp', Date.now())
+    res.set('x-timestamp', Date.now());
   }
-}
+};
 
 publicStaticPaths.forEach((_p) => {
-  publicRouter.use('/' + _p, express.static(path.join(process.cwd(), './assets/public'), options))
+  publicRouter.use('/' + _p, express.static(path.join(process.cwd(), './assets/public'), options));
 });
 
 module.exports = publicRouter;
