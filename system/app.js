@@ -32,15 +32,14 @@ pathInfos.filter(dirname => ignoreFirld.indexOf(dirname) === -1).forEach((dirnam
   let currServer = require('./' + path.join(serversDir, dirname));
   let serverPath = currServer.alias || dirname;
   let startSubServer = currServer.start;
-  let toRoot = currServer.toRoot;
   if(startSubServer) {
     try {
       startSubServer();
     } catch(e) {
       console.log(e);
     }
-  } else if(toRoot) {
-    app.use(currServer);
+  } else if(currServer.routes) {
+    app.use(currServer.routes());
   } else {
     router.all(`/${serverPath}`, currServer);
   }
@@ -60,8 +59,8 @@ app.use(router.routes());
 // app.use(processUpdater);
 
 // 最后处理所有错误
-app.use((req, res, next) => {
-  res.status(404).send('non');
+app.use(async (ctx, next) => {
+  ctx.res.status(404).send('non');
 });
 
 app.listen(mainServerPort, async (err) => {

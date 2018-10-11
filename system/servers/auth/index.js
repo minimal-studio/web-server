@@ -33,7 +33,4 @@ authRouter.post('/auth-login', bodyParser, auth, async (ctx) => {
   });
 });
 
-// 注册到根路由的标记
-authRouter.toRoot = true;
-
 module.exports = authRouter;
