@@ -18,13 +18,13 @@ const objToArr = (obj, filter, limit = maxAssetCount) => {
     taked++;
   }
   return result.reverse();
-}
+};
 
 const findAll = (obj, findParams, filter) => {
   let hasFilter = _.isFunction(filter);
   let res = {};
   for (const key in obj) {
-    const item = obj[key];
+    let item = obj[key];
     for (const targetKey in findParams) {
       const targetVal = findParams[targetKey];
       if(typeof targetVal == 'function') {
@@ -38,7 +38,7 @@ const findAll = (obj, findParams, filter) => {
     }
   }
   return res;
-}
+};
 
 const entityMerge = (reqBody, entity) => {
   let res = {...entity};
@@ -48,10 +48,10 @@ const entityMerge = (reqBody, entity) => {
     }
   }
   return res;
-}
+};
 
 module.exports = {
   objToArr,
   findAll,
   entityMerge
-}
+};
