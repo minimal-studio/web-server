@@ -1,4 +1,5 @@
 
 module.exports = async (ctx, next) => {
-  return ctx.body = "This is the '/' route in sub_app";
+  await next();
+  ctx.body = "This is the '/' route in sub_app";
 };

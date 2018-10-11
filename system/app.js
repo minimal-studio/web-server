@@ -43,12 +43,9 @@ app.use(publicRouter);
 
 app.use(router.routes());
 
-// 最后处理所有错误
-// app.use(async (ctx, next) => {
-//   // console.log(ctx.response)
-//   // ctx.status = 404;
-//   // ctx.body('non');
-// });
+router.get('/', async ctx => {
+  ctx.body = {};
+});
 
 app.listen(mainServerPort, async (err) => {
   if(err) return console.log(err);

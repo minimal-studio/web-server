@@ -24,6 +24,7 @@ const dynamicRoute = async (ctx) => {
     // if(currRouter.subRouter) dynamicRouter.use(currRouter.subRouter);
     return await currRouter(ctx);
   } catch(e) {
+    ctx.error = e;
     return await notFound(ctx);
   }
 };
@@ -59,9 +60,9 @@ const listDyrs = async (ctx) => {
   }
 };
 
-dynamicRouter.use('/__reload_module/:moduleName', reloadModule);
-dynamicRouter.use('/__list', listDyrs);
+dynamicRouter.get('/__reload_module/:moduleName', reloadModule);
+dynamicRouter.get('/__list', listDyrs);
 dynamicRouter.all('/:route', dynamicRoute);
-dynamicRouter.use('/', rootRoute);
+dynamicRouter.get('/', rootRoute);
 
 module.exports = dynamicRouter;

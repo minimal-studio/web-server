@@ -1,5 +1,8 @@
-let notFound = async (ctx) => {
-  ctx.body = 'not found';
+const notFound = async (ctx) => {
+  ctx.body = {
+    err: ctx.error,
+    desc: '404'
+  };
 };
 
 module.exports = notFound;
