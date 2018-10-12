@@ -1,22 +1,15 @@
-let express = require('express');
-let compression = require('compression');
-let helmet = require('helmet');
-let cors = require('cors')
+const app = require('../../factories/app-server')();
 
 let { FEServerPort } = require('../../config');
 
 let deployment = require('./deployment');
 
 const startServer = () => {
-  let app = express();
-  app.use(helmet());
-  app.use(compression());
-  app.use(cors());
   
-  app.use(deployment);
+  app.use(deployment.routes());
 
-  app.listen(FEServerPort, () => {
-    console.log('FEDeployment server started, at port: ' + FEServerPort)
+  app.listen(FEServerPort, async () => {
+    console.log('FEDeployment server started, at port: ' + FEServerPort);
   });
-}
+};
 module.exports.start = startServer;

@@ -1,11 +1,12 @@
-const express = require('express');
-const bodyParser = require('body-parser');
 const uuidv3 = require('uuid/v3');
 const path  = require('path');
 // const fse  = require('fs-extra');
 const fs  = require('fs');
 const _ = require('lodash');
 const { exec } = require('child_process');
+
+const bodyParser = require('koa-bodyParser');
+const Router = require('koa-router');
 
 const sshParser = require('./ssh-config-parser');
 const {
@@ -15,22 +16,20 @@ const {
 } = require('./config');
 const unzipFile = require('./unzip');
 const { objToArr, findAll, entityMerge } = require('./utils');
-const uploader = require('./uploader');
+const uploader = require('./uploader')(zipAssetsStorePath);
 
 const projectEntity = require('./entities/project');
 const assetEntity = require('./entities/asset');
 
-const upload = uploader(zipAssetsStorePath);
+const deploymentRouter = new Router();
+deploymentRouter.use(bodyParser());
 
-let deploymentRouter = express.Router();
-
-const jsonParser = bodyParser.json();
-const urlencodedParser = bodyParser.urlencoded({ extended: false });
-
-const resFilter = (req, res, next) => {
-  res.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
-  res.header('Expires', '-1');
-  res.header('Pragma', 'no-cache');
+const resFilter = async (ctx, next) => {
+  ctx.set({
+    'Cache-Control': 'privat:, no-cache, no-store, must-revalidate',
+    'Expires': '-1',
+    'Pragma': 'no-cache'
+  });
   next();
 };
 
@@ -50,11 +49,11 @@ const getSSHHostList = () => {
  * 根据 project 的 founder 和 collaborators 来判断
  * 如果没有对应的权限，会直接返回
  */
-const checkProjAuth = (req, res, next) => {
-  let { username, projId, assetId } = req.body;
+const checkProjAuth = async (ctx, next) => {
+  let { username, projId, assetId } = ctx.request.body;
 
-  if(!username) return res.json({err: 'username is required'});
-  if(!projId) return res.json({err: 'projId is required'});
+  if(!username) return ctx.body = {err: 'username is required'};
+  if(!projId) return ctx.body = {err: 'projId is required'};
   
   let currProjConfig = db.get(`projects.${projId}`).value();
   let currAssetConfig = db.get(`assets.${assetId}`).value();
@@ -69,22 +68,23 @@ const checkProjAuth = (req, res, next) => {
     assetConfig.isPass = true;
   } else {
     assetConfig.isPass = false;
-    return res.json({
+    return ctx.body = {
       err: 'You have no promission to do that.'
-    });
+    };
   }
 
-  req.assetConfig = assetConfig;
+  ctx.assetConfig = assetConfig;
 
-  next();
+  await next();
 };
 
 /**
  * query project
  */
-const getProjectList = (req, res) => {
-  let { projId, user, range } = req.query;
-  if(!user) res.json({ err: 'must pass username' });
+const getProjectList = async (ctx, next) => {
+  let { projId, user, range } = ctx.request.query;
+  if(!user) return ctx.body = { err: 'must pass username' };
+
   let result;
   if(projId) {
     result = Object.assign({}, db.get(`projects.${projId}`).value());
@@ -108,56 +108,61 @@ const getProjectList = (req, res) => {
     }
     result = objToArr(projectData, null, 0);
   }
-  res.json({
+  ctx.body = {
     err: null,
     data: result
-  });
+  };
+
+  await next();
 };
 
 /**
  * create project
  */
-const createProject = [
-  jsonParser, (req, res) => {
-    const {
-      username, projName, projCode, projDesc
-    } = req.body;
+const createProject = async (ctx, next) => {
+  const {
+    username, projName, projCode, projDesc
+  } = ctx.request.body;
 
-    let isProjExist = !!db.get('projects').find({
-      projCode
-    }).value();
+  let isProjExist = !!db.get('projects').find({
+    projCode
+  }).value();
 
-    if(isProjExist) return res.json({err: projCode + ' is exist'});
+  if(isProjExist) return ctx.body = {
+    err: projCode + ' is exist'
+  };
 
-    if(!username || !projCode || !projName) return res.json({
-      err: true,
-      desc: 'username, projName, projCode are required.'
-    });
+  if(!username || !projCode || !projName) return ctx.body = {
+    err: true,
+    desc: 'username, projName, projCode are required.'
+  };
 
-    const createProjId = uuidv3(projName + projCode + username, uuidv3.DNS);
-    
-    let newProject = entityMerge(req.body, projectEntity);
-    Object.assign(newProject, {
-      id: createProjId,
-      createdDate: Date.now(),
-      founder: username
-    });
-    
-    db.set(`projects.${createProjId}`, newProject).write();
-    audit(createProjId, {
-      username,
-      note: projDesc,
-      type: 'createProj'
-    });
+  const createProjId = uuidv3(projName + projCode + username, uuidv3.DNS);
   
-    res.json({
-      err: null,
-      data: newProject
-    });
-  }
-];
+  let newProject = entityMerge(ctx.request.body, projectEntity);
+  Object.assign(newProject, {
+    id: createProjId,
+    createdDate: Date.now(),
+    founder: username
+  });
+  
+  db.set(`projects.${createProjId}`, newProject).write();
+  audit(createProjId, {
+    username,
+    note: projDesc,
+    type: 'createProj'
+  });
 
-const releaseAsset = ({ project, asset }) => {
+  ctx.body = {
+    err: null,
+    data: newProject
+  };
+
+  await next();
+};
+
+const releaseAsset = async (ctx, next) => {
+  const { project, asset } = ctx.assetConfig;
   let zipFilePath = path.join(zipAssetsStorePath, asset.id + '.zip');
   let outputPath = project._deployPath || getDeployPath(project.projCode);
 
@@ -165,177 +170,174 @@ const releaseAsset = ({ project, asset }) => {
     fs.mkdirSync(outputPath);
   }
 
-  return unzipFile(zipFilePath, outputPath);
+  unzipFile(zipFilePath, outputPath);
+
+  await next();
 };
 
 /**
  * get ssh-host list
  */
-const getSshHosts = (req, res) => {
+const getSshHosts = async (ctx) => {
   let hostMapper = getSSHHostList();
-  res.json({
+  ctx.body = {
     err: null,
     data: Object.keys(hostMapper),
     mapper: hostMapper
-  });
+  };
 };
 
 /**
  * release specified asset of specified project
  */
-const handleRelease = [
-  jsonParser, checkProjAuth,
-  (req, res) => {
-    let { project, asset } = req.assetConfig;
-    releaseAsset(req.assetConfig).then(() => {
-      let {
-        username, projId, assetId,
-        isCallHook, isExecScp
-      } = req.body;
-  
-      let releaseLog = {
-        operator: username,
-        version: asset.version,
-        note: asset.desc,
-        type: 'release'
+const handleRelease = async (ctx, next) => {
+  let { project, asset } = ctx.assetConfig;
+  releaseAsset(ctx.assetConfig).then(() => {
+    let {
+      username, projId, assetId,
+      isCallHook, isExecScp
+    } = ctx.request.body;
+
+    let releaseLog = {
+      operator: username,
+      version: asset.version,
+      note: asset.desc,
+      type: 'release'
+    };
+
+    project.releaseRef = assetId;
+    db.set(`projects.${projId}`, project).write();
+    db.set(`assets.${asset.id}.isReleased`, true).write();
+
+    audit(projId, releaseLog);
+    
+    if(isCallHook) {
+      // TODO: 完善通知机制
+
+    }
+
+    let execRes;
+
+    if(isExecScp) {
+      let { projCode, scpSourceDir = '', scpTargetHost, scpTargetDir, pushMode = 'push-files' } = project;
+      let targetPath = path.join(scpTargetDir, projCode);
+      let scpCommand = '';
+
+      switch (pushMode) {
+      // 把资源压缩包推送到目标服务器再解压
+      case 'push-zip':
+        let zipFileName = asset.id + '.zip';
+        let zipFilePath = path.join(zipAssetsStorePath, zipFileName);
+        let remoteSrourceFilePath = scpSourceDir ? path.join(targetPath, scpSourceDir, '*') : null;
+        let remoteZipFilePath = path.join(remoteZipStorePath, zipFileName);
+        let mvToPath = targetPath;
+
+        scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${remoteZipStorePath}';` + 
+                     `scp ${zipFilePath} ${scpTargetHost}:${remoteZipStorePath};` + 
+                     `ssh ${scpTargetHost} 'mkdir -p ${targetPath};` + 
+                     `unzip -o ${remoteZipFilePath} -d ${targetPath};` + 
+                     `${remoteSrourceFilePath ? `cp -rf ${remoteSrourceFilePath} ${mvToPath}` : ''}'`;
+        break;
+      case 'push-files':
+        // 把解压了的资源推送到目标服务器
+        let sourcePath = path.join(staticServerPath, projCode, scpSourceDir, '*');
+
+        scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${targetPath}';` +
+                     `scp -rB ${sourcePath} ${scpTargetHost}:${targetPath};`;
+        break;
+      }
+
+      if(!scpCommand) return ctx.body = {
+        err: '请检查 pushMode 是否正确: push-zip | push-files'
       };
-  
-      project.releaseRef = assetId;
-      db.set(`projects.${projId}`, project).write();
-      db.set(`assets.${asset.id}.isReleased`, true).write();
-  
-      audit(projId, releaseLog);
       
-      if(isCallHook) {
-        // TODO: 完善通知机制
-
-      }
-
-      let execRes;
-
-      if(isExecScp) {
-        let { projCode, scpSourceDir = '', scpTargetHost, scpTargetDir, pushMode = 'push-files' } = project;
-        let targetPath = path.join(scpTargetDir, projCode);
-        let scpCommand = '';
-
-        switch (pushMode) {
-        // 把资源压缩包推送到目标服务器再解压
-        case 'push-zip':
-          let zipFileName = asset.id + '.zip';
-          let zipFilePath = path.join(zipAssetsStorePath, zipFileName);
-          let remoteSrourceFilePath = scpSourceDir ? path.join(targetPath, scpSourceDir, '*') : null;
-          let remoteZipFilePath = path.join(remoteZipStorePath, zipFileName);
-          let mvToPath = targetPath;
-
-          scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${remoteZipStorePath}';` + 
-                       `scp ${zipFilePath} ${scpTargetHost}:${remoteZipStorePath};` + 
-                       `ssh ${scpTargetHost} 'mkdir -p ${targetPath};` + 
-                       `unzip -o ${remoteZipFilePath} -d ${targetPath};` + 
-                       `${remoteSrourceFilePath ? `cp -rf ${remoteSrourceFilePath} ${mvToPath}` : ''}'`;
-          break;
-        case 'push-files':
-          // 把解压了的资源推送到目标服务器
-          let sourcePath = path.join(staticServerPath, projCode, scpSourceDir, '*');
-
-          scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${targetPath}';` +
-                       `scp -rB ${sourcePath} ${scpTargetHost}:${targetPath};`;
-          break;
-        }
-
-        if(!scpCommand) return res.json({
-          err: '请检查 pushMode 是否正确: push-zip | push-files'
-        });
-        
-        exec(scpCommand, (err) => {
-          // console.log(err)
-          res.json({
-            err: err ? (err + '') : null
-          });
-        });
-      } else {
-        res.json({
-          err: execRes ? (execRes + '') : null
-        });
-      }
-      
-    }, () => {
-      return res.json({
-        err: 'File not exist.'
+      exec(scpCommand, (err) => {
+        ctx.body = {
+          err: err ? (err + '') : null
+        };
       });
-    }).catch((err) => {
-      return res.json({
-        err: err + ''
-      });
-    });
-  }
-];
+    } else {
+      ctx.body = {
+        err: execRes ? (execRes + '') : null
+      };
+    }
+  }, () => {
+    return ctx.body = {
+      err: 'File not exist.'
+    };
+  }).catch((err) => {
+    return ctx.body = {
+      err: err + ''
+    };
+  });
+
+  await next();
+};
 
 /**
  * rollback
  */
-const handleRollback = [
-  jsonParser, checkProjAuth,
-  (req, res) => {
-    let { project, asset } = req.assetConfig;
-    releaseAsset(req.assetConfig).then(() => {
-      let { username, projId, assetId, rollbackMark, prevAssetId } = req.body;
-      let releaseLog = {
-        operator: username,
-        version: asset.version,
-        note: asset.desc,
-        type: 'rollback'
-      };
-      let prevAssetConfig = Object.assign({}, db.get(`assets.${prevAssetId}`).value(), {
-        isReleased: false,
-        isRollback: true,
-        rollbackMark,
-        status: 'rollback'
-      });
-      let nextAssetConfig = Object.assign({}, asset, {
-        isReleased: true,
-        status: 'released'
-      });
-      project.releaseRef = assetId;
-      db.set(`projects.${projId}`, project).write();
-      db.set(`assets.${asset.id}`, nextAssetConfig).write();
-      db.set(`assets.${prevAssetId}`, prevAssetConfig).write();
-      audit(projId, releaseLog);
-      res.json({
-        err: null
-      });
-    }, () => {
-      return res.json({
-        err: 'File not exist.'
-      });
-    }).catch((err) => {
-      return res.json({
-        err: err + ''
-      });
+const handleRollback = async (ctx, next) => {
+  let { project, asset } = ctx.assetConfig;
+  releaseAsset(ctx.assetConfig).then(() => {
+    let { username, projId, assetId, rollbackMark, prevAssetId } = ctx.request.body;
+    let releaseLog = {
+      operator: username,
+      version: asset.version,
+      note: asset.desc,
+      type: 'rollback'
+    };
+    let prevAssetConfig = Object.assign({}, db.get(`assets.${prevAssetId}`).value(), {
+      isReleased: false,
+      isRollback: true,
+      rollbackMark,
+      status: 'rollback'
     });
-  }
-];
+    let nextAssetConfig = Object.assign({}, asset, {
+      isReleased: true,
+      status: 'released'
+    });
+    project.releaseRef = assetId;
+    db.set(`projects.${projId}`, project).write();
+    db.set(`assets.${asset.id}`, nextAssetConfig).write();
+    db.set(`assets.${prevAssetId}`, prevAssetConfig).write();
+    audit(projId, releaseLog);
+    ctx.body = {
+      err: null
+    };
+  }, () => {
+    return ctx.body = {
+      err: 'File not exist.'
+    };
+  }).catch((err) => {
+    return ctx.body = {
+      err: err + ''
+    };
+  });
+
+  await next();
+};
 
 /**
  * update project whit simple auth
  */
-const updateProject = [
-  jsonParser, checkProjAuth,
-  (req, res) => {
-    let { project } = req.assetConfig;
+const updateProject = async (ctx, next) => {
+  let { project } = ctx.assetConfig;
 
-    let nextProj = entityMerge({
-      ...project,
-      ...req.body,
-      motifyDate: Date.now(),
-    }, projectEntity);
+  let nextProj = entityMerge({
+    ...project,
+    ...ctx.request.body,
+    motifyDate: Date.now(),
+  }, projectEntity);
 
-    db.set(`projects.${project.id}`, nextProj).write();
-    res.json({
-      err: null,
-      data: nextProj
-    });
-  }
-];
+  db.set(`projects.${project.id}`, nextProj).write();
+  ctx.body = {
+    err: null,
+    data: nextProj
+  };
+
+  await next();
+};
 
 const removeAllAssets = (assetList) => {
   let allActions = [];
@@ -358,84 +360,79 @@ const removeAllAssets = (assetList) => {
 /**
  * delete project
  */
-const deleteProject = [
-  jsonParser, checkProjAuth,
-  (req, res) => {
-    const { projId } = req.body;
+const deleteProject = async (ctx, next) => {
+  const { projId } = ctx.request.body;
 
-    const assetDBObj = db.get(`assets`);
+  const assetDBObj = db.get(`assets`);
 
-    const assetsData = assetDBObj.value();
-    const assetList = findAll(assetsData, {belongto: projId});
+  const assetsData = assetDBObj.value();
+  const assetList = findAll(assetsData, {belongto: projId});
 
-    db.update('assets', o => {
-      for (const id in o) {
-        if(o[id].belongto === projId) delete o[id];
-      }
-      return o;
-    }).write();
-    db.unset(`projects.${projId}`).write();
+  db.update('assets', o => {
+    for (const id in o) {
+      if(o[id].belongto === projId) delete o[id];
+    }
+    return o;
+  }).write();
+  db.unset(`projects.${projId}`).write();
 
-    removeAllAssets(assetList)
-      .then((success) => {
-        res.json({
-          err: null,
-        });
-      })
-      .catch(err => {
-        res.json({
-          err: err + '',
-        });
-      });
-  }
-];
+  removeAllAssets(assetList)
+    .then((success) => {
+      ctx.body = {
+        err: null,
+      };
+    })
+    .catch(err => {
+      ctx.body = {
+        err: err + '',
+      };
+    });
+
+  await next();
+};
 
 /**
  * 加入协作
  */
-const applyToJoin = [
-  jsonParser,
-  (req, res) => {
-    let { projId, username } = req.body;
-    db.update(
-      `projects.${projId}.collaboratorApplies`,
-      o => {
-        let res = [...o];
-        if(!_.includes(res, username)) res.push(username);
-        return res;
-      }
-    ).write();
-    res.json({
-      err: null
-    });
-  }
-];
+const applyToJoin = async (ctx) => {
+  let { projId, username } = ctx.request.body;
+  db.update(
+    `projects.${projId}.collaboratorApplies`,
+    o => {
+      let res = [...o];
+      if(!_.includes(res, username)) res.push(username);
+      return res;
+    }
+  ).write();
+  ctx.body = {
+    err: null
+  };
+};
 
 /**
  * 加入协作
  */
-const approveJoinToProject = [
-  jsonParser, checkProjAuth,
-  (req, res) => {
-    let { projId, applicant, updatable, deletable, releasable } = req.body;
-    if(!applicant) return res.json({
-      err: 'need to pass applicant'
-    });
-    db
-      .update(`projects.${projId}.collaboratorApplies`, o => {
-        let res = [...o];
-        _.pull(res, applicant);
-        return res;
-      })
-      .set(`projects.${projId}.collaborators.${applicant}`, {
-        updatable, deletable, releasable
-      })
-      .write();
-    res.json({
-      err: null
-    });
-  }
-];
+const approveJoinToProject = async (ctx) => {
+  let { projId, applicant, updatable, deletable, releasable } = ctx.request.body;
+  if(!applicant) return ctx.body = {
+    err: 'need to pass applicant'
+  };
+
+  db
+    .update(`projects.${projId}.collaboratorApplies`, o => {
+      let res = [...o];
+      _.pull(res, applicant);
+      return res;
+    })
+    .set(`projects.${projId}.collaborators.${applicant}`, {
+      updatable, deletable, releasable
+    })
+    .write();
+
+  ctx.body = {
+    err: null
+  };
+};
 
 const clearAsset = (project) => {
   return new Promise((resolve, reject) => {
@@ -463,85 +460,89 @@ const clearAsset = (project) => {
 /**
  * handle uploaded asset
  */
-const handleUpload = [
-  upload.single('assetZip'),
-  (req, res) => {
-    if(!req.file) return res.json({err: 'no upload files'});
-    const { founder, projId } = req.body;
+const handleUpload = async (ctx, next) => {
+  await next();
+  return ctx.body = {
+    err: 'err',
+    data: 'targetProject'
+  };
+  // if(!ctx.req.file) return ctx.body = {
+  //   err: 'no upload files'
+  // };
 
-    let targetProject = db.get(`projects.${projId}`).value();
-    let { assetNumb } = targetProject;
+  // const { founder, projId } = ctx.req.body;
 
-    if(targetProject.founder == founder || !!targetProject.collaborators[founder]) {
-      let currVersion = (+assetNumb || 0) + 1;
-      let assetId = req.file.filename.split('.')[0];
-      let nextAssetState = {
-        ...entityMerge({...req.body}, assetEntity),
-        belongto: projId,
-        id: assetId,
-        createdDate: Date.now(),
-        version: currVersion
-      };
+  // let targetProject = db.get(`projects.${projId}`).value();
+  // let { assetNumb } = targetProject;
 
-      let releaseLog = {
-        username: founder,
-        type: 'createAsset'
-      };
+  // let err = null;
+  // let nextAssetState = {};
 
-      db.set(`assets.${assetId}`, nextAssetState).write();
-      db
-        .update(`projects.${projId}.assetsCount`, n => (n || 0) + 1)
-        .update(`projects.${projId}.assetNumb`, n => (n || 0) + 1)
-        .write();
+  // if(targetProject.founder == founder || !!targetProject.collaborators[founder]) {
+  //   let currVersion = (+assetNumb || 0) + 1;
+  //   let assetId = ctx.req.file.filename.split('.')[0];
+  //   nextAssetState = {
+  //     ...entityMerge({...ctx.req.body}, assetEntity),
+  //     belongto: projId,
+  //     id: assetId,
+  //     createdDate: Date.now(),
+  //     version: currVersion
+  //   };
 
-      audit(projId, releaseLog);
+  //   let releaseLog = {
+  //     username: founder,
+  //     type: 'createAsset'
+  //   };
 
-      if(currVersion > maxAssetCount) {
-        clearAsset(targetProject);
-      }
+  //   db.set(`assets.${assetId}`, nextAssetState).write();
+  //   db
+  //     .update(`projects.${projId}.assetsCount`, n => (n || 0) + 1)
+  //     .update(`projects.${projId}.assetNumb`, n => (n || 0) + 1)
+  //     .write();
 
-      return res.json({
-        err: null,
-        data: nextAssetState
-      });
+  //   audit(projId, releaseLog);
 
-    } else {
-      return res.json({
-        err: 'You have no promission to update this project',
-      });
-    }
-  }
-];
-
-/**
- * query assets
- */
-const getAssets = (req, res) => {
-  let { projId } = req.query;
-  let assetListObjData = {};
-  if(!projId) {
-    assetListObjData = db.get('assets').sortBy('version').value();
-    return res.json(objToArr(assetListObjData));
-  } else {
-    let assetsData = db.get('assets').value();
-    assetListObjData = findAll(assetsData, {belongto: projId});
-  }
-  res.json({
-    err: null,
-    data: objToArr(assetListObjData)
-  });
+  //   if(currVersion > maxAssetCount) {
+  //     clearAsset(targetProject);
+  //   }
+  // } else {
+  //   err = 'You have no promission to update this project';
+  // }
+  // ctx.body = {
+  //   err: err,
+  //   data: nextAssetState
+  // };
 };
 
 /**
  * query assets
  */
-const delAsset = [jsonParser, checkProjAuth, (req, res) => {
-  let { projId, assetId, username } = req.body;
+const getAssets = async (ctx) => {
+  let { projId } = ctx.request.query;
+  let assetListObjData = {};
+  if(!projId) {
+    assetListObjData = db.get('assets').sortBy('version').value();
+    return ctx.body = objToArr(assetListObjData);
+  } else {
+    let assetsData = db.get('assets').value();
+    assetListObjData = findAll(assetsData, {belongto: projId});
+  }
+  ctx.body = {
+    err: null,
+    data: objToArr(assetListObjData)
+  };
+};
+
+/**
+ * query assets
+ */
+const delAsset = async (ctx) => {
+  let { projId, assetId, username } = ctx.request.body;
   let unlinkFilePath = path.join(zipAssetsStorePath, assetId + '.zip');
   fs.unlink(unlinkFilePath, (err) => {
-    if(err) return res.json({
+    if(err) return ctx.body = {
       err: 'This file did not exist.'
-    });
+    };
     let releaseLog = {
       username,
       type: 'deleteAsset'
@@ -549,55 +550,55 @@ const delAsset = [jsonParser, checkProjAuth, (req, res) => {
     db.unset(`assets.${assetId}`).write();
     db.update(`projects.${projId}.assetsCount`, n => n - 1).write();
     audit(projId, releaseLog);
-    res.json({
+    ctx.body = {
       err: null
-    });
+    };
   });
-}];
+};
 
 /**
  * audit log
  */
-const getAutid = (req, res) => {
-  let { projId } = req.query;
+const getAutid = async (ctx) => {
+  let { projId } = ctx.request.query;
   if(!projId) {
-    res.json({
+    ctx.body = {
       err: 'need projId.'
-    });
+    };
   } else {
-    res.json({
+    ctx.body = {
       err: null,
       data: getAudit(projId)
-    });
+    };
   }
 };
 
-const downloadAsset = (req, res) => {
-  let { assetId } = req.query;
-  if(!assetId) return res.json({err: 'need pass assetId'});
+const downloadAsset = async (ctx) => {
+  let { assetId } = ctx.request.query;
+  if(!assetId) return ctx.body = {err: 'need pass assetId'};
   const fileName = assetId + '.zip';
   const zipFile = path.join(zipAssetsStorePath, fileName);
 
-  res.set({
+  ctx.set({
     'Content-Type': 'application/octet-stream',
     'Content-Disposition': 'attachment; filename=' + fileName
   });
 
-  fs.createReadStream(zipFile).pipe(res);
+  fs.createReadStream(zipFile).pipe(ctx.response);
 };
 
-deploymentRouter.put('/project', updateProject);
+deploymentRouter.put('/project', checkProjAuth, updateProject);
 
-deploymentRouter.post('/release', handleRelease);
-deploymentRouter.post('/rollback', handleRollback);
-deploymentRouter.post('/upload', handleUpload);
-deploymentRouter.post('/del-asset', delAsset);
+deploymentRouter.post('/release', checkProjAuth, handleRelease);
+deploymentRouter.post('/rollback', checkProjAuth, handleRollback);
+deploymentRouter.post('/upload', handleUpload, uploader.single('assetZip'));
+deploymentRouter.post('/del-asset', checkProjAuth, delAsset);
 deploymentRouter.post('/join', applyToJoin);
 deploymentRouter.post('/project', createProject);
-deploymentRouter.post('/approve', approveJoinToProject);
+deploymentRouter.post('/approve', checkProjAuth, approveJoinToProject);
 
-deploymentRouter.delete('/project', deleteProject);
-deploymentRouter.delete('/assets', delAsset);
+deploymentRouter.delete('/project', checkProjAuth, deleteProject);
+deploymentRouter.delete('/assets', checkProjAuth, delAsset);
 
 deploymentRouter.get('/download-asset', downloadAsset);
 deploymentRouter.get('/assets', getAssets);

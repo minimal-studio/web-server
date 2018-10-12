@@ -1,4 +1,4 @@
-const multer = require('multer');
+const multer = require('koa-multer');
 const uuidv1 = require('uuid/v1');
 
 const uploadHelper = (zipAssetsStorePath) => {
@@ -12,6 +12,6 @@ const uploadHelper = (zipAssetsStorePath) => {
     }
   });
   return multer({storage: fileStorageConfig});
-}
+};
 
 module.exports = uploadHelper;

@@ -20,7 +20,7 @@ const accessLogStream = fs.createWriteStream(path.join(process.cwd(), '/runtime/
 app.use(logger('combined', {stream: accessLogStream}));
 
 const pathInfos = fs.readdirSync(path.join(__dirname, serversDir));
-const ignoreFirld = ['index.js', 'config', 'frond-end-deployment'];
+const ignoreFirld = ['index.js', 'config'];
 pathInfos.filter(dirname => ignoreFirld.indexOf(dirname) === -1).forEach((dirname) => {
   const currServer = require('./' + path.join(serversDir, dirname));
   const serverPath = currServer.alias || dirname;
