@@ -8,8 +8,8 @@ const authRouter = new Router();
 // authRouter.use(bodyParser());
 
 const auth = async (ctx, next) => {
-  const { AdminName, Password } = ctx.body.data;
-  if(testAuthData[AdminName].password == Password) {
+  const { AdminName, Password } = ctx.request.body.data;
+  if(Password === testAuthData[AdminName].password) {
     ctx.userInfo = {
       AdminName,
       SessId: 'suiyi'
@@ -22,7 +22,7 @@ const auth = async (ctx, next) => {
   }
 };
 
-authRouter.post('/auth-login', bodyParser, auth, async (ctx) => {
+authRouter.post('/auth-login', bodyParser(), auth, async (ctx) => {
   const { userInfo } = ctx;
   ctx.body = {
     err: null,

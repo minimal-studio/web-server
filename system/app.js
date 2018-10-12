@@ -14,7 +14,6 @@ const handleError = require('./routers/error-handle');
 const router = new Router();
 
 const publicRouter = staticServer(publicStaticServerConfig);
-
 const serversDir = 'servers';
 
 const accessLogStream = fs.createWriteStream(path.join(process.cwd(), '/runtime/web-server.log'), {flags: 'a'});
