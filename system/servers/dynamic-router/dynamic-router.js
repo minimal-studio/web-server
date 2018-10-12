@@ -1,5 +1,4 @@
 const Router = require('koa-router');
-const bodyParser = require('koa-bodyparser');
 const path = require('path');
 const fs = require('fs');
 

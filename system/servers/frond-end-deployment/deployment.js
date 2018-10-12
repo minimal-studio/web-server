@@ -5,8 +5,8 @@ const fs  = require('fs');
 const _ = require('lodash');
 const { exec } = require('child_process');
 
-const bodyParser = require('koa-bodyParser');
 const Router = require('koa-router');
+const bodyParser = require('koa-body');
 
 const sshParser = require('./ssh-config-parser');
 const {
@@ -16,12 +16,14 @@ const {
 } = require('./config');
 const unzipFile = require('./unzip');
 const { objToArr, findAll, entityMerge } = require('./utils');
-const uploader = require('./uploader')(zipAssetsStorePath);
+const uploader = require('./uploader/save-file')(zipAssetsStorePath);
+// const uploader = require('./uploader')(zipAssetsStorePath);
 
 const projectEntity = require('./entities/project');
 const assetEntity = require('./entities/asset');
 
 const deploymentRouter = new Router();
+
 deploymentRouter.use(bodyParser());
 
 const resFilter = async (ctx, next) => {
@@ -51,6 +53,7 @@ const getSSHHostList = () => {
  */
 const checkProjAuth = async (ctx, next) => {
   let { username, projId, assetId } = ctx.request.body;
+  console.log(ctx.request.body)
 
   if(!username) return ctx.body = {err: 'username is required'};
   if(!projId) return ctx.body = {err: 'projId is required'};
@@ -461,57 +464,50 @@ const clearAsset = (project) => {
  * handle uploaded asset
  */
 const handleUpload = async (ctx, next) => {
-  await next();
-  return ctx.body = {
-    err: 'err',
-    data: 'targetProject'
+  const { founder, projId } = ctx.request.body;
+
+  let targetProject = db.get(`projects.${projId}`).value();
+  let { assetNumb } = targetProject;
+
+  let err = null;
+  let nextAssetState = {};
+
+  if(targetProject.founder == founder || !!targetProject.collaborators[founder]) {
+    let currVersion = (+assetNumb || 0) + 1;
+    let assetId = ctx.assetId;
+    nextAssetState = {
+      ...entityMerge({
+        ...ctx.req.body
+      }, assetEntity),
+      belongto: projId,
+      id: assetId,
+      createdDate: Date.now(),
+      version: currVersion
+    };
+
+    let releaseLog = {
+      username: founder,
+      type: 'createAsset'
+    };
+
+    db.set(`assets.${assetId}`, nextAssetState).write();
+    db
+      .update(`projects.${projId}.assetsCount`, n => (n || 0) + 1)
+      .update(`projects.${projId}.assetNumb`, n => (n || 0) + 1)
+      .write();
+
+    audit(projId, releaseLog);
+
+    if(currVersion > maxAssetCount) {
+      clearAsset(targetProject);
+    }
+  } else {
+    err = 'You have no promission to update this project';
+  }
+  ctx.body = {
+    err: err,
+    data: nextAssetState
   };
-  // if(!ctx.req.file) return ctx.body = {
-  //   err: 'no upload files'
-  // };
-
-  // const { founder, projId } = ctx.req.body;
-
-  // let targetProject = db.get(`projects.${projId}`).value();
-  // let { assetNumb } = targetProject;
-
-  // let err = null;
-  // let nextAssetState = {};
-
-  // if(targetProject.founder == founder || !!targetProject.collaborators[founder]) {
-  //   let currVersion = (+assetNumb || 0) + 1;
-  //   let assetId = ctx.req.file.filename.split('.')[0];
-  //   nextAssetState = {
-  //     ...entityMerge({...ctx.req.body}, assetEntity),
-  //     belongto: projId,
-  //     id: assetId,
-  //     createdDate: Date.now(),
-  //     version: currVersion
-  //   };
-
-  //   let releaseLog = {
-  //     username: founder,
-  //     type: 'createAsset'
-  //   };
-
-  //   db.set(`assets.${assetId}`, nextAssetState).write();
-  //   db
-  //     .update(`projects.${projId}.assetsCount`, n => (n || 0) + 1)
-  //     .update(`projects.${projId}.assetNumb`, n => (n || 0) + 1)
-  //     .write();
-
-  //   audit(projId, releaseLog);
-
-  //   if(currVersion > maxAssetCount) {
-  //     clearAsset(targetProject);
-  //   }
-  // } else {
-  //   err = 'You have no promission to update this project';
-  // }
-  // ctx.body = {
-  //   err: err,
-  //   data: nextAssetState
-  // };
 };
 
 /**
@@ -591,14 +587,26 @@ deploymentRouter.put('/project', checkProjAuth, updateProject);
 
 deploymentRouter.post('/release', checkProjAuth, handleRelease);
 deploymentRouter.post('/rollback', checkProjAuth, handleRollback);
-deploymentRouter.post('/upload', handleUpload, uploader.single('assetZip'));
+deploymentRouter.post('/upload',
+  // uploader.single('assetZip'),
+  bodyParser({
+    multipart: true,
+    formidable: {
+      uploadDir: zipAssetsStorePath,
+      hash: 'sha1',
+      keepExtensions: true
+    }
+  }),
+  uploader,
+  handleUpload
+);
 deploymentRouter.post('/del-asset', checkProjAuth, delAsset);
 deploymentRouter.post('/join', applyToJoin);
 deploymentRouter.post('/project', createProject);
 deploymentRouter.post('/approve', checkProjAuth, approveJoinToProject);
 
-deploymentRouter.delete('/project', checkProjAuth, deleteProject);
-deploymentRouter.delete('/assets', checkProjAuth, delAsset);
+deploymentRouter.del('/project', checkProjAuth, deleteProject);
+deploymentRouter.del('/assets', checkProjAuth, delAsset);
 
 deploymentRouter.get('/download-asset', downloadAsset);
 deploymentRouter.get('/assets', getAssets);

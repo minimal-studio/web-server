@@ -1,5 +1,5 @@
 const Router = require('koa-router');
-const bodyParser = require('koa-bodyparser');
+const bodyParser = require('koa-body');
 
 const testAuthData = require('./test-auth-data');
 
