@@ -6,10 +6,8 @@ const saveFile = (savePath) => {
   if(!savePath) console.log('请传入 savePath');
   return async (ctx, next) => {
     const file = ctx.request.files.assetZip;
-    console.log(file)
     const ext = path.extname(file.name);
     const assetId = uuidv1();
-    console.log(file);
     if(!file) return ctx.body = {
       err: 'no upload files'
     };

@@ -23,8 +23,11 @@ const projectEntity = require('./entities/project');
 const assetEntity = require('./entities/asset');
 
 const deploymentRouter = new Router();
+const assetUploadRouter = new Router();
 
-deploymentRouter.use(bodyParser());
+deploymentRouter.use(bodyParser({
+  strict: false
+}));
 
 const resFilter = async (ctx, next) => {
   ctx.set({
@@ -53,7 +56,6 @@ const getSSHHostList = () => {
  */
 const checkProjAuth = async (ctx, next) => {
   let { username, projId, assetId } = ctx.request.body;
-  console.log(ctx.request.body)
 
   if(!username) return ctx.body = {err: 'username is required'};
   if(!projId) return ctx.body = {err: 'projId is required'};
@@ -164,18 +166,11 @@ const createProject = async (ctx, next) => {
   await next();
 };
 
-const releaseAsset = async (ctx, next) => {
-  const { project, asset } = ctx.assetConfig;
-  let zipFilePath = path.join(zipAssetsStorePath, asset.id + '.zip');
-  let outputPath = project._deployPath || getDeployPath(project.projCode);
+const releaseAsset = async ({ project, asset }) => {
+  const zipFilePath = path.join(zipAssetsStorePath, asset.id + '.zip');
+  const outputPath = project._deployPath || getDeployPath(project.projCode);
 
-  if(!fs.existsSync(outputPath)) {
-    fs.mkdirSync(outputPath);
-  }
-
-  unzipFile(zipFilePath, outputPath);
-
-  await next();
+  return await unzipFile(zipFilePath, outputPath);
 };
 
 /**
@@ -190,89 +185,99 @@ const getSshHosts = async (ctx) => {
   };
 };
 
+const handleSCP = (ctx) => {
+  let { project, asset } = ctx.assetConfig;
+  
+  let { projCode, scpSourceDir = '', scpTargetHost, scpTargetDir, pushMode = 'push-files' } = project;
+  let targetPath = path.join(scpTargetDir, projCode);
+  let scpCommand = '';
+
+  switch (pushMode) {
+  // 把资源压缩包推送到目标服务器再解压
+  case 'push-zip':
+    let zipFileName = asset.id + '.zip';
+    let zipFilePath = path.join(zipAssetsStorePath, zipFileName);
+    let remoteSrourceFilePath = scpSourceDir ? path.join(targetPath, scpSourceDir, '*') : null;
+    let remoteZipFilePath = path.join(remoteZipStorePath, zipFileName);
+    let mvToPath = targetPath;
+
+    scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${remoteZipStorePath}';` + 
+                 `scp ${zipFilePath} ${scpTargetHost}:${remoteZipStorePath};` + 
+                 `ssh ${scpTargetHost} 'mkdir -p ${targetPath};` + 
+                 `unzip -o ${remoteZipFilePath} -d ${targetPath};` + 
+                 `${remoteSrourceFilePath ? `cp -rf ${remoteSrourceFilePath} ${mvToPath}` : ''}'`;
+    break;
+  case 'push-files':
+    // 把解压了的资源推送到目标服务器
+    let sourcePath = path.join(staticServerPath, projCode, scpSourceDir, '*');
+
+    scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${targetPath}';` +
+                 `scp -rB ${sourcePath} ${scpTargetHost}:${targetPath};`;
+    break;
+  }
+
+  if(!scpCommand) return ctx.body = {
+    err: '请检查 pushMode 是否正确: push-zip | push-files'
+  };
+  
+  exec(scpCommand, (err) => {
+    ctx.body = {
+      err: err ? (err + '') : null
+    };
+  });
+};
+
+const writeReleaseNote = (ctx) => {
+  let { project, asset } = ctx.assetConfig;
+  let {
+    username, projId, assetId,
+  } = ctx.request.body;
+
+  let releaseLog = {
+    operator: username,
+    version: asset.version,
+    note: asset.desc,
+    type: 'release'
+  };
+
+  project.releaseRef = assetId;
+  db.set(`projects.${projId}`, project).write();
+  db.set(`assets.${asset.id}.isReleased`, true).write();
+
+  audit(projId, releaseLog);
+};
+
+const execWebHook = () => {
+  console.log('TODO: 完善通知机制');
+};
+
 /**
  * release specified asset of specified project
  */
 const handleRelease = async (ctx, next) => {
   let { project, asset } = ctx.assetConfig;
-  releaseAsset(ctx.assetConfig).then(() => {
-    let {
-      username, projId, assetId,
-      isCallHook, isExecScp
-    } = ctx.request.body;
-
-    let releaseLog = {
-      operator: username,
-      version: asset.version,
-      note: asset.desc,
-      type: 'release'
-    };
-
-    project.releaseRef = assetId;
-    db.set(`projects.${projId}`, project).write();
-    db.set(`assets.${asset.id}.isReleased`, true).write();
-
-    audit(projId, releaseLog);
-    
-    if(isCallHook) {
-      // TODO: 完善通知机制
-
-    }
-
-    let execRes;
-
-    if(isExecScp) {
-      let { projCode, scpSourceDir = '', scpTargetHost, scpTargetDir, pushMode = 'push-files' } = project;
-      let targetPath = path.join(scpTargetDir, projCode);
-      let scpCommand = '';
-
-      switch (pushMode) {
-      // 把资源压缩包推送到目标服务器再解压
-      case 'push-zip':
-        let zipFileName = asset.id + '.zip';
-        let zipFilePath = path.join(zipAssetsStorePath, zipFileName);
-        let remoteSrourceFilePath = scpSourceDir ? path.join(targetPath, scpSourceDir, '*') : null;
-        let remoteZipFilePath = path.join(remoteZipStorePath, zipFileName);
-        let mvToPath = targetPath;
-
-        scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${remoteZipStorePath}';` + 
-                     `scp ${zipFilePath} ${scpTargetHost}:${remoteZipStorePath};` + 
-                     `ssh ${scpTargetHost} 'mkdir -p ${targetPath};` + 
-                     `unzip -o ${remoteZipFilePath} -d ${targetPath};` + 
-                     `${remoteSrourceFilePath ? `cp -rf ${remoteSrourceFilePath} ${mvToPath}` : ''}'`;
-        break;
-      case 'push-files':
-        // 把解压了的资源推送到目标服务器
-        let sourcePath = path.join(staticServerPath, projCode, scpSourceDir, '*');
-
-        scpCommand = `ssh ${scpTargetHost} 'mkdir -p ${targetPath}';` +
-                     `scp -rB ${sourcePath} ${scpTargetHost}:${targetPath};`;
-        break;
-      }
-
-      if(!scpCommand) return ctx.body = {
-        err: '请检查 pushMode 是否正确: push-zip | push-files'
-      };
-      
-      exec(scpCommand, (err) => {
-        ctx.body = {
-          err: err ? (err + '') : null
-        };
-      });
-    } else {
-      ctx.body = {
-        err: execRes ? (execRes + '') : null
-      };
-    }
-  }, () => {
+  const releaseRes = releaseAsset({ project, asset });
+  if(!releaseRes) {
     return ctx.body = {
       err: 'File not exist.'
     };
-  }).catch((err) => {
-    return ctx.body = {
-      err: err + ''
+  }
+  writeReleaseNote(ctx);
+  const {
+    isCallHook, isExecScp
+  } = ctx.request.body;
+
+  if(isCallHook) {
+    execWebHook(ctx);
+  }
+
+  if(isExecScp) {
+    handleSCP(ctx);
+  } else {
+    ctx.body = {
+      err: null
     };
-  });
+  }
 
   await next();
 };
@@ -282,42 +287,41 @@ const handleRelease = async (ctx, next) => {
  */
 const handleRollback = async (ctx, next) => {
   let { project, asset } = ctx.assetConfig;
-  releaseAsset(ctx.assetConfig).then(() => {
-    let { username, projId, assetId, rollbackMark, prevAssetId } = ctx.request.body;
-    let releaseLog = {
-      operator: username,
-      version: asset.version,
-      note: asset.desc,
-      type: 'rollback'
-    };
-    let prevAssetConfig = Object.assign({}, db.get(`assets.${prevAssetId}`).value(), {
-      isReleased: false,
-      isRollback: true,
-      rollbackMark,
-      status: 'rollback'
-    });
-    let nextAssetConfig = Object.assign({}, asset, {
-      isReleased: true,
-      status: 'released'
-    });
-    project.releaseRef = assetId;
-    db.set(`projects.${projId}`, project).write();
-    db.set(`assets.${asset.id}`, nextAssetConfig).write();
-    db.set(`assets.${prevAssetId}`, prevAssetConfig).write();
-    audit(projId, releaseLog);
-    ctx.body = {
-      err: null
-    };
-  }, () => {
-    return ctx.body = {
-      err: 'File not exist.'
-    };
-  }).catch((err) => {
-    return ctx.body = {
-      err: err + ''
-    };
+  const releaseRes = releaseAsset({ project, asset });
+
+  if(!releaseRes) return ctx.body = {
+    err: 'File not exist.'
+  };
+
+  let { username, projId, assetId, rollbackMark, prevAssetId } = ctx.request.body;
+  let prevAssetConfig = Object.assign({}, db.get(`assets.${prevAssetId}`).value(), {
+    isReleased: false,
+    isRollback: true,
+    rollbackMark,
+    status: 'rollback'
+  });
+  let nextAssetConfig = Object.assign({}, asset, {
+    isReleased: true,
+    status: 'released'
   });
 
+  project.releaseRef = assetId;
+  db.set(`projects.${projId}`, project).write();
+  db.set(`assets.${asset.id}`, nextAssetConfig).write();
+  db.set(`assets.${prevAssetId}`, prevAssetConfig).write();
+
+  ctx.body = {
+    err: null
+  };
+
+  let releaseLog = {
+    operator: username,
+    version: asset.version,
+    note: asset.desc,
+    type: 'rollback'
+  };
+  audit(projId, releaseLog);
+  
   await next();
 };
 
@@ -587,19 +591,6 @@ deploymentRouter.put('/project', checkProjAuth, updateProject);
 
 deploymentRouter.post('/release', checkProjAuth, handleRelease);
 deploymentRouter.post('/rollback', checkProjAuth, handleRollback);
-deploymentRouter.post('/upload',
-  // uploader.single('assetZip'),
-  bodyParser({
-    multipart: true,
-    formidable: {
-      uploadDir: zipAssetsStorePath,
-      hash: 'sha1',
-      keepExtensions: true
-    }
-  }),
-  uploader,
-  handleUpload
-);
 deploymentRouter.post('/del-asset', checkProjAuth, delAsset);
 deploymentRouter.post('/join', applyToJoin);
 deploymentRouter.post('/project', createProject);
@@ -614,4 +605,21 @@ deploymentRouter.get('/audit', getAutid);
 deploymentRouter.get('/ssh-host', getSshHosts);
 deploymentRouter.get('/project', getProjectList);
 
-module.exports = deploymentRouter;
+assetUploadRouter.post('/upload',
+  // uploader.single('assetZip'),
+  bodyParser({
+    multipart: true,
+    formidable: {
+      uploadDir: zipAssetsStorePath,
+      hash: 'sha1',
+      keepExtensions: true
+    }
+  }),
+  uploader,
+  handleUpload
+);
+
+module.exports = {
+  deploymentRouter,
+  assetUploadRouter,
+};

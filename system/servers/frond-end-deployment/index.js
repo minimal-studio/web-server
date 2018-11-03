@@ -1,12 +1,11 @@
 const app = require('../../factories/app-server')();
-
-let { FEServerPort } = require('../../config');
-
-let deployment = require('./deployment');
+const { FEServerPort } = require('../../config');
+const { deploymentRouter, assetUploadRouter } = require('./deployment');
 
 const startServer = () => {
   
-  app.use(deployment.routes());
+  app.use(deploymentRouter.routes());
+  app.use(assetUploadRouter.routes());
 
   app.listen(FEServerPort, async () => {
     console.log('FEDeployment server started, at port: ' + FEServerPort);
