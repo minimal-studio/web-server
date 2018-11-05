@@ -11,6 +11,15 @@ const resFilter = async (ctx, next) => {
   await next();
 };
 
-webhookRouter.use('/', resFilter);
+webhookRouter.use(resFilter);
+webhookRouter.get('/', (ctx) => {
+  ctx.body = 'Welcome to webhook';
+});
+webhookRouter.post('/git-notify', (ctx) => {
+  ctx.body = 'Welcome to git-notify';
+});
+webhookRouter.get('/git-notify', (ctx) => {
+  ctx.body = 'Welcome to git-notify';
+});
 
 module.exports = webhookRouter;

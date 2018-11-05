@@ -44,7 +44,26 @@ npm i pm2 -g
 
 ## 开始使用
 
-TODO 提供自动构建
+### 接口
+
+> servers，提供了注册在 Main server 的路由，或者注册一个全新服务的接口
+
+注册到 Main server 上
+
+```js
+
+```
+
+注册全新服务
+
+1. 在 system/servers 下创建任意目录，并且需要有 index.js 索引文件
+2. index.js 到处 start 方法作为接口，用于注册全新的服务
+
+```js
+module.exports.start = () => {
+
+}
+```
 
 ### 自动构建
 
