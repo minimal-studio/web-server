@@ -9,6 +9,7 @@ const unzipFile = async (inputPath, outputPath) => {
     try {
       fs.createReadStream(inputPath)
         .pipe(unzip.Extract({ path: outputPath }));
+      return true;
     } catch(e) {
       return e;
     }

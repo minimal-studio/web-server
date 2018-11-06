@@ -4,6 +4,7 @@ const path = require('path');
 const fse = require('fs-extra');
 const fs = require('fs');
 const os  = require('os');
+const request  = require('request');
 
 const { adminDirName } = require('../../config');
 
@@ -34,6 +35,25 @@ const db = low(adapter);
 const auditAdapter = new FileSync(auditdbStorePath);
 const auditdb = low(auditAdapter);
 const sshPath = path.join(os.homedir(), ".ssh/config");
+const dateFormat = require('dateformat');
+
+/**
+ * 用于 scp 同步成功后的消息通知，目前使用 telegram 机器人通知机制
+ */
+const scpNotifyConfig = ({
+  project, desc, date, operator
+}) => {
+  const url = 'http://localhost:43343/scp';
+  request({
+    uri: url,
+    method: 'POST',
+    json: {
+      project, desc,
+      operator,
+      date: dateFormat(date, 'yyyy-mm-dd hh:MM:ss'),
+    }
+  });
+};
 
 /**
  * TODO: 默认初始化两个模块
@@ -69,6 +89,7 @@ module.exports = {
   maxAssetCount,
   adminResourcePath,
   sshPath,
+  scpNotifyConfig,
   db,
   adapter,
   getDeployPath: (projCode) => {
@@ -82,7 +103,7 @@ module.exports = {
 
     return {
       deployStorePath, assetDir, 
-    }
+    };
   },
   audit: (projId, note) => {
     let operator = note.operator || note.username || '';
@@ -95,10 +116,10 @@ module.exports = {
     if(!auditdb.get(`${projId}`).value()) {
       auditdb.set(`${projId}`, []).write();
     }
-    console.log(nextState)
+    console.log(nextState);
     auditdb.get(`${projId}`).push(nextState).write();
   },
   getAudit: (projId) => {
     return [...(auditdb.get(`${projId}`).value() || [])].reverse();
   }
-}
+};

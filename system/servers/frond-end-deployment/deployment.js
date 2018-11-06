@@ -3,7 +3,7 @@ const path  = require('path');
 // const fse  = require('fs-extra');
 const fs  = require('fs');
 const _ = require('lodash');
-const { exec } = require('child_process');
+const { exec, execSync } = require('child_process');
 
 const Router = require('koa-router');
 const bodyParser = require('koa-body');
@@ -11,7 +11,7 @@ const bodyParser = require('koa-body');
 const sshParser = require('./ssh-config-parser');
 const {
   db, getDeployPath, zipAssetsStorePath, remoteZipStorePath,
-  audit, getAudit, maxAssetCount, sshPath,
+  audit, getAudit, maxAssetCount, sshPath, scpNotifyConfig,
   staticServerPath
 } = require('./config');
 const unzipFile = require('./unzip');
@@ -63,15 +63,15 @@ const getSSHHostList = () => {
  * 如果没有对应的权限，会直接返回
  */
 const checkProjAuth = async (ctx, next) => {
-  let { username, projId, assetId } = ctx.request.body;
+  const { username, projId, assetId } = ctx.request.body;
 
   if(!username) return ctx.body = {err: 'username is required'};
   if(!projId) return ctx.body = {err: 'projId is required'};
   
-  let currProjConfig = db.get(`projects.${projId}`).value();
-  let currAssetConfig = db.get(`assets.${assetId}`).value();
+  const currProjConfig = db.get(`projects.${projId}`).value();
+  const currAssetConfig = db.get(`assets.${assetId}`).value();
 
-  let assetConfig = {
+  const assetConfig = {
     username,
     project: currProjConfig,
     asset: currAssetConfig,
@@ -193,8 +193,35 @@ const getSshHosts = async (ctx) => {
   };
 };
 
-const handleSCP = (ctx) => {
-  let { project, asset } = ctx.assetConfig;
+const writeReleaseNote = (ctx) => {
+  const { project, asset } = ctx.assetConfig;
+  const {
+    username, projId, assetId,
+  } = ctx.request.body;
+
+  const releaseLog = {
+    operator: username,
+    version: asset.version,
+    note: asset.desc,
+    type: 'release'
+  };
+
+  project.releaseRef = assetId;
+  db.set(`projects.${projId}`, project).write();
+  db.set(`assets.${asset.id}.isReleased`, true).write();
+
+  audit(projId, releaseLog);
+};
+
+const execWebHook = () => {
+  console.log('TODO: 完善通知机制');
+};
+
+const handleSCP = async (ctx, next) => {
+  const { isExecScp, username } = ctx.request.body;
+  if(!isExecScp) return next();
+
+  const { project, asset } = ctx.assetConfig;
   
   let { projCode, scpSourceDir = '', scpTargetHost, scpTargetDir, pushMode = 'push-files' } = project;
   let targetPath = path.join(scpTargetDir, projCode);
@@ -227,88 +254,89 @@ const handleSCP = (ctx) => {
   if(!scpCommand) return ctx.body = {
     err: '请检查 pushMode 是否正确: push-zip | push-files'
   };
-  
-  exec(scpCommand, (err) => {
-    ctx.body = {
-      err: err ? (err + '') : null
-    };
+
+  return new Promise((resolve) => {
+    // console.log(4)
+    exec(scpCommand, (err) => {
+      next();
+      scpNotifyConfig({
+        project: project.projName,
+        desc: !err ? asset.desc: err,
+        date: Date.now(),
+        operator: username
+      });
+    });
   });
-};
-
-const writeReleaseNote = (ctx) => {
-  let { project, asset } = ctx.assetConfig;
-  let {
-    username, projId, assetId,
-  } = ctx.request.body;
-
-  let releaseLog = {
-    operator: username,
-    version: asset.version,
-    note: asset.desc,
-    type: 'release'
-  };
-
-  project.releaseRef = assetId;
-  db.set(`projects.${projId}`, project).write();
-  db.set(`assets.${asset.id}.isReleased`, true).write();
-
-  audit(projId, releaseLog);
-};
-
-const execWebHook = () => {
-  console.log('TODO: 完善通知机制');
+  // return next();
 };
 
 /**
  * release specified asset of specified project
  */
 const handleRelease = async (ctx, next) => {
-  let { project, asset } = ctx.assetConfig;
-  const releaseRes = releaseAsset({ project, asset });
+  const { project, asset } = ctx.assetConfig;
+  const releaseRes = await releaseAsset({ project, asset });
+
+  next();
+
   if(!releaseRes) {
     return ctx.body = {
       err: 'File not exist.'
     };
   }
   writeReleaseNote(ctx);
-  const {
-    isCallHook, isExecScp
-  } = ctx.request.body;
+  const { isCallHook } = ctx.request.body;
 
   if(isCallHook) {
     execWebHook(ctx);
   }
 
-  if(isExecScp) {
-    handleSCP(ctx);
-  } else {
-    ctx.body = {
-      err: null
-    };
-  }
+  ctx.body = {
+    err: ctx.scpRes
+  };
+  // await next();
 
+  // if(isExecScp) {
+  //   const scpRes = await handleSCP(ctx);
+  //   console.log(scpRes);
+  //   ctx.body = {
+  //     err: ''
+  //   };
+  // } else {
+  //   ctx.body = {
+  //     err: null
+  //   };
+  // }
+
+};
+
+const releaseDone = async (ctx, next) => {
   await next();
+  console.log(6)
+  ctx.body = {
+    err: ctx.scpErr
+  };
 };
 
 /**
  * rollback
  */
 const handleRollback = async (ctx, next) => {
-  let { project, asset } = ctx.assetConfig;
-  const releaseRes = releaseAsset({ project, asset });
+  const { project, asset } = ctx.assetConfig;
+  const releaseRes = await releaseAsset({ project, asset });
 
   if(!releaseRes) return ctx.body = {
     err: 'File not exist.'
   };
 
-  let { username, projId, assetId, rollbackMark, prevAssetId } = ctx.request.body;
-  let prevAssetConfig = Object.assign({}, db.get(`assets.${prevAssetId}`).value(), {
+  const { username, projId, assetId, rollbackMark, prevAssetId } = ctx.request.body;
+  const prevAssetConfig = Object.assign({}, db.get(`assets.${prevAssetId}`).value(), {
     isReleased: false,
     isRollback: true,
     rollbackMark,
     status: 'rollback'
   });
-  let nextAssetConfig = Object.assign({}, asset, {
+  const nextAssetConfig = Object.assign({}, asset, {
     isReleased: true,
     status: 'released'
   });
@@ -492,7 +520,7 @@ const handleUpload = async (ctx, next) => {
     let assetId = ctx.assetId;
     nextAssetState = {
       ...entityMerge({
-        ...ctx.req.body
+        ...ctx.request.body
       }, assetEntity),
       belongto: projId,
       id: assetId,
@@ -600,7 +628,7 @@ const downloadAsset = async (ctx) => {
 
 deploymentRouter.put('/project', checkProjAuth, updateProject);
 
-deploymentRouter.post('/release', checkProjAuth, handleRelease);
+deploymentRouter.post('/release', checkProjAuth, handleRelease, handleSCP);
 deploymentRouter.post('/rollback', checkProjAuth, handleRollback);
 deploymentRouter.post('/del-asset', checkProjAuth, delAsset);
 deploymentRouter.post('/join', applyToJoin);

@@ -43,4 +43,4 @@ runtime/dynamic-routres/get-config-from-server
 _none
 
 test-webhook
-webhook-for-gitlab
+**/webhook/config.js
