@@ -3,10 +3,18 @@ const Router = require('koa-router');
 const bodyParser = require('koa-body');
 
 const app = require('../../factories/app-server')();
+
+/** 在引用 config 之前使用引用 check config，用于检查并生成 config 文件 */
+require('./check-config');
 const webhookConfig = require('./config');
 
 const webhookRouter = new Router();
 const { tgToken, port, chatIDs } = webhookConfig;
+
+if(tgToken === 'none') {
+  console.log('请填写 tgToken，否则无法进行 telegram bot 匹配.');
+}
+
 const bot = new Telegraf(tgToken);
 
 const gitMsgFilter = ({
