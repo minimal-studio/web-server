@@ -9,7 +9,8 @@ const authRouter = new Router();
 
 const auth = async (ctx, next) => {
   const { AdminName, Password } = ctx.request.body.data;
-  if(Password === testAuthData[AdminName].password) {
+  const loginUser = testAuthData[AdminName];
+  if(loginUser && Password === loginUser.password) {
     ctx.userInfo = {
       AdminName,
       SessId: 'suiyi'

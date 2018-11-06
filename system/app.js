@@ -7,13 +7,13 @@ const app = require('./factories/app-server')();
 
 // const dynamicRoute = require('../routers/dynamic-router');
 const { mainServerPort, systemDir, publicStaticServerConfig } = require('./config');
-const staticServer = require('./factories/static-server');
+// const staticServer = require('./factories/static-server');
 // const processUpdater = require('../routers/process-updater');
-const handleError = require('./routers/error-handle');
+// const handleError = require('./routers/error-handle');
 
 const router = new Router();
 
-const publicRouter = staticServer(publicStaticServerConfig);
+// const publicRouter = staticServer(publicStaticServerConfig);
 const serversDir = 'servers';
 
 const accessLogStream = fs.createWriteStream(path.join(process.cwd(), '/runtime/web-server.log'), {flags: 'a'});
@@ -25,6 +25,7 @@ pathInfos.filter(dirname => ignoreFirld.indexOf(dirname) === -1).forEach((dirnam
   const currServer = require('./' + path.join(serversDir, dirname));
   const serverPath = currServer.alias || dirname;
   const startSubServer = currServer.start;
+  const isAgent = currServer.isAgent;
   if(startSubServer) {
     try {
       startSubServer();
@@ -33,12 +34,14 @@ pathInfos.filter(dirname => ignoreFirld.indexOf(dirname) === -1).forEach((dirnam
     }
   } else if(currServer.routes) {
     app.use(currServer.routes());
+  } else if(isAgent) {
+    app.use(currServer());
   } else {
     router.all(`/${serverPath}`, currServer);
   }
 });
 
-app.use(publicRouter);
+// app.use(publicRouter);
 
 app.use(router.routes());
 

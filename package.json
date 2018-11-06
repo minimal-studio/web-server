@@ -9,7 +9,7 @@
     "update": "git pull remote master",
     "start": "NODE_ENV=development nodemon --watch routers/ --watch system/ --watch runtime/dynamic-routres/ --exec npm run start:normal",
     "restartServer": "NODE_ENV=production pm2 restart uke-web-server",
-    "zip": "sh ./zip.sh",
+    "zip": "sh ./shells/zip.sh",
     "deploy": "NODE_ENV=production pm2 start ./system --name 'uke-web-server'",
     "test": "mocha"
   },

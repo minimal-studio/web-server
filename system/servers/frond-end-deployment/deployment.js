@@ -29,6 +29,14 @@ deploymentRouter.use(bodyParser({
   strict: false
 }));
 
+const wrapAssetFileName = (assetId, traceMsg) => {
+  if(!assetId) {
+    console.log('assetId is need, at func ' + traceMsg);
+    return '';
+  }
+  return assetId + '.zip';
+};
+
 const resFilter = async (ctx, next) => {
   ctx.set({
     'Cache-Control': 'privat:, no-cache, no-store, must-revalidate',
@@ -167,7 +175,7 @@ const createProject = async (ctx, next) => {
 };
 
 const releaseAsset = async ({ project, asset }) => {
-  const zipFilePath = path.join(zipAssetsStorePath, asset.id + '.zip');
+  const zipFilePath = path.join(zipAssetsStorePath, wrapAssetFileName(asset.id, 'releaseAsset'));
   const outputPath = project._deployPath || getDeployPath(project.projCode);
 
   return await unzipFile(zipFilePath, outputPath);
@@ -195,7 +203,7 @@ const handleSCP = (ctx) => {
   switch (pushMode) {
   // 把资源压缩包推送到目标服务器再解压
   case 'push-zip':
-    let zipFileName = asset.id + '.zip';
+    let zipFileName = wrapAssetFileName(asset.id, 'handleSCP');
     let zipFilePath = path.join(zipAssetsStorePath, zipFileName);
     let remoteSrourceFilePath = scpSourceDir ? path.join(targetPath, scpSourceDir, '*') : null;
     let remoteZipFilePath = path.join(remoteZipStorePath, zipFileName);
@@ -353,7 +361,7 @@ const removeAllAssets = (assetList) => {
     if (assetList.hasOwnProperty(assetId)) {
       // const currAsset = assetList[assetId];
       allActions.push(new Promise((resolve, reject) => {
-        fs.unlink(path.join(zipAssetsStorePath, assetId + '.zip'), (err) => {
+        fs.unlink(path.join(zipAssetsStorePath, wrapAssetFileName(assetId, 'removeAllAssets')), (err) => {
           if(err) return reject(err);
           resolve();
         });
@@ -448,7 +456,7 @@ const clearAsset = (project) => {
     let delAsset = assets.slice(maxAssetCount);
     delAsset.forEach(item => {
       let assetId = item.id;
-      let unlinkFilePath = path.join(zipAssetsStorePath, assetId + '.zip');
+      let unlinkFilePath = path.join(zipAssetsStorePath, wrapAssetFileName(assetId, 'clearAsset'));
       fs.unlink(unlinkFilePath, (err) => {
         if(err) return reject(err);
         let releaseLog = {
@@ -538,7 +546,7 @@ const getAssets = async (ctx) => {
  */
 const delAsset = async (ctx) => {
   let { projId, assetId, username } = ctx.request.body;
-  let unlinkFilePath = path.join(zipAssetsStorePath, assetId + '.zip');
+  let unlinkFilePath = path.join(zipAssetsStorePath, wrapAssetFileName(assetId, 'delAsset'));
   fs.unlink(unlinkFilePath, (err) => {
     if(err) return ctx.body = {
       err: 'This file did not exist.'
@@ -576,7 +584,7 @@ const getAutid = async (ctx) => {
 const downloadAsset = async (ctx) => {
   let { assetId } = ctx.request.query;
   if(!assetId) return ctx.body = {err: 'need pass assetId'};
-  const fileName = assetId + '.zip';
+  const fileName = wrapAssetFileName(assetId, 'downloadAsset');
   const zipFile = path.join(zipAssetsStorePath, fileName);
 
   ctx.set({
