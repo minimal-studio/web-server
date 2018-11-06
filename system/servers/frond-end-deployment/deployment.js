@@ -452,14 +452,17 @@ const approveJoinToProject = async (ctx) => {
 const clearAsset = (project) => {
   return new Promise((resolve, reject) => {
     if(!project) reject('project is required.');
-    let assets = [].concat(objToArr(db.get("assets").value(), null, 0));
-    let delAsset = assets.slice(maxAssetCount);
+    const allAsset = db.get("assets").value();
+    const currAssetForProject = findAll(allAsset, {belongto: project.id});
+    const assets = [].concat(objToArr(currAssetForProject, null, 0));
+    const delAsset = assets.slice(maxAssetCount);
+
     delAsset.forEach(item => {
-      let assetId = item.id;
-      let unlinkFilePath = path.join(zipAssetsStorePath, wrapAssetFileName(assetId, 'clearAsset'));
+      const assetId = item.id;
+      const unlinkFilePath = path.join(zipAssetsStorePath, wrapAssetFileName(assetId, 'clearAsset'));
       fs.unlink(unlinkFilePath, (err) => {
         if(err) return reject(err);
-        let releaseLog = {
+        const releaseLog = {
           username: 'system',
           type: 'systemDeleteAsset'
         };
