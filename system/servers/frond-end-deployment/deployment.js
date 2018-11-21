@@ -12,7 +12,7 @@ const sshParser = require('./ssh-config-parser');
 const {
   db, getDeployPath, zipAssetsStorePath, remoteZipStorePath,
   audit, getAudit, maxAssetCount, sshPath, scpNotifyConfig,
-  staticServerPath
+  staticServerPath, superPowerChecker
 } = require('./config');
 const unzipFile = require('./unzip');
 const { objToArr, findAll, entityMerge } = require('./utils');
@@ -61,6 +61,8 @@ const getSSHHostList = () => {
  * 简易的用户权限判断中间件
  * 根据 project 的 founder 和 collaborators 来判断
  * 如果没有对应的权限，会直接返回
+ * 
+ * TODO: 先允许 admin 做所有操作，后续再做细致的权限控制
  */
 const checkProjAuth = async (ctx, next) => {
   const { username, projId, assetId } = ctx.request.body;
@@ -77,7 +79,7 @@ const checkProjAuth = async (ctx, next) => {
     asset: currAssetConfig,
   };
 
-  if(username && currProjConfig && (currProjConfig.founder === username || currProjConfig.collaborators[username])) {
+  if(username && currProjConfig && (currProjConfig.founder === username || currProjConfig.collaborators[username]) || superPowerChecker(username)) {
     assetConfig.isPass = true;
   } else {
     assetConfig.isPass = false;
@@ -223,7 +225,7 @@ const handleSCP = async (ctx, next) => {
 
   const { project, asset } = ctx.assetConfig;
   
-  let { projCode, scpSourceDir = '', scpTargetHost, scpTargetDir, pushMode = 'push-files' } = project;
+  let { projCode, scpSourceDir = '', scpTargetHost, scpTargetDir, pushMode = 'push-files', host } = project;
   let targetPath = path.join(scpTargetDir, projCode);
   let scpCommand = '';
 
@@ -261,6 +263,7 @@ const handleSCP = async (ctx, next) => {
       next();
       scpNotifyConfig({
         project: project.projName,
+        host,
         desc: !err ? asset.desc: err,
         date: Date.now(),
         operator: username
@@ -627,6 +630,7 @@ const downloadAsset = async (ctx) => {
 };
 
 deploymentRouter.put('/project', checkProjAuth, updateProject);
+deploymentRouter.patch('/project', checkProjAuth, updateProject);
 
 deploymentRouter.post('/release', checkProjAuth, handleRelease, handleSCP);
 deploymentRouter.post('/rollback', checkProjAuth, handleRollback);

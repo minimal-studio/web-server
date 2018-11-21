@@ -18,6 +18,11 @@ const zipAssetsStorePath = path.join(cwd, './assets/zips');
 
 const remoteZipStorePath = '~/.front-end-zip';
 
+const superList = ['admin'];
+const superPowerChecker = (username) => {
+  return superList.includes(username);
+};
+
 if(!fs.existsSync(dbStorePath)) {
   fse.mkdirpSync(zipAssetsStorePath);
   fse.mkdirpSync(adminResourcePath);
@@ -35,22 +40,17 @@ const db = low(adapter);
 const auditAdapter = new FileSync(auditdbStorePath);
 const auditdb = low(auditAdapter);
 const sshPath = path.join(os.homedir(), ".ssh/config");
-const dateFormat = require('dateformat');
 
 /**
  * 用于 scp 同步成功后的消息通知，目前使用 telegram 机器人通知机制
  */
-const scpNotifyConfig = ({
-  project, desc, date, operator
-}) => {
+const scpNotifyConfig = (options) => {
   const url = 'http://localhost:43343/scp';
   request({
     uri: url,
     method: 'POST',
     json: {
-      project, desc,
-      operator,
-      date: dateFormat(date, 'yyyy-mm-dd hh:MM:ss'),
+      ...options,
     }
   });
 };
@@ -90,6 +90,7 @@ module.exports = {
   adminResourcePath,
   sshPath,
   scpNotifyConfig,
+  superPowerChecker,
   db,
   adapter,
   getDeployPath: (projCode) => {

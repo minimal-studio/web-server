@@ -11,7 +11,13 @@ const projectEntity = {
   scpSourceDir: "",
   scpTargetHost: "",
   scpTargetDir: "",
-  collaborators: {},
+  collaborators: {
+    admin: {
+      "updatable": 1,
+      "deletable": 1,
+      "releasable": 1
+    }
+  },
   collaboratorApplies: [],
   assetsCount: 0,
   assetNumb: 0,

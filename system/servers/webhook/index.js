@@ -7,11 +7,14 @@ const app = require('../../factories/app-server')();
 /** 在引用 config 之前使用引用 check config，用于检查并生成 config 文件 */
 require('./check-config');
 const webhookConfig = require('./config');
+const dateFormat = require('dateformat');
 
 const webhookRouter = new Router();
 const { tgToken, port, chatIDs } = webhookConfig;
 
-if(tgToken === 'none') {
+const hasTgToken = tgToken && tgToken !== 'none';
+
+if(!hasTgToken) {
   console.log('请填写 tgToken，否则无法进行 telegram bot 匹配.');
 }
 
@@ -61,13 +64,15 @@ const handleGitWebHook = (ctx) => {
   });
 };
 
-const scpMsgFilter = ({ project, desc, date, operator, url = '' }) => {
+const scpMsgFilter = ({ project, desc, date, operator, host = '' }) => {
+  date = dateFormat(date, 'yyyy-mm-dd hh:MM:ss');
+  console.log(host)
   return `
 <code>项目: ${project}</code>
 <code>操作者: ${operator}</code>
 <code>时间: ${date}</code>
 <code>内容: ${desc}</code>
-<a href="${url}">地址: ${url}</a>`;
+<a href="${host}">地址: ${host}</a>`;
 };
 
 const handleScpNotify = (ctx) => {
@@ -83,7 +88,9 @@ webhookRouter.get('/scp', (ctx) => ctx.body = 'got scp router!');
 webhookRouter.post('/git', handleGitWebHook);
 webhookRouter.post('/scp', handleScpNotify);
 
-bot.startPolling();
+if(hasTgToken) {
+  bot.startPolling();
+}
 
 module.exports.start = () => {
   app.use(bodyParser());
