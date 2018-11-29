@@ -24,7 +24,7 @@ const superPowerChecker = (username) => {
   return superList.includes(username);
 };
 
-if(!fs.existsSync(dbStorePath)) {
+if(!fs.existsSync(deployConfigStorePath)) {
   fse.mkdirpSync(zipAssetsStorePath);
   fse.mkdirpSync(adminResourcePath);
   fse.mkdirpSync(dbPath);
