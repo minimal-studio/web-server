@@ -24,6 +24,7 @@ const superPowerChecker = (username) => {
   return superList.includes(username);
 };
 
+/** 注意，这里容易清空数据，请先备份数据 */
 if(!fs.existsSync(deployConfigStorePath)) {
   fse.mkdirpSync(zipAssetsStorePath);
   fse.mkdirpSync(adminResourcePath);
