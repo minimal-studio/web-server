@@ -227,7 +227,9 @@ const handleSCP = async (ctx, next) => {
   const { project, asset } = ctx.assetConfig;
   
   let { projCode, scpSourceDir = '', scpTargetHost, scpTargetDir, pushMode = 'push-files', host } = project;
-  let targetPath = path.join(scpTargetDir, projCode);
+  // let targetPath = path.join(scpTargetDir, projCode);
+  // 不再使用 scp path + projCode 这样的组合
+  let targetPath = path.join(scpTargetDir);
   let scpCommand = '';
 
   switch (pushMode) {

@@ -24,14 +24,22 @@ const superPowerChecker = (username) => {
   return superList.includes(username);
 };
 
-/** 注意，这里容易清空数据，请先备份数据 */
 if(!fs.existsSync(deployConfigStorePath)) {
+  let dbStore = {}, auditdbStore = {}, deployConfigStore = {};
+  /** 使用上一份的数据，保证不会数据丢失 */
+  try {
+    dbStore = require(dbStorePath);
+    auditdbStore = require(auditdbStorePath);
+    deployConfigStore = require(deployConfigStorePath);
+  } catch(e) {
+    console.log(e);
+  }
   fse.mkdirpSync(zipAssetsStorePath);
   fse.mkdirpSync(adminResourcePath);
   fse.mkdirpSync(dbPath);
-  fse.writeJsonSync(dbStorePath, {});
-  fse.writeJsonSync(auditdbStorePath, {});
-  fse.writeJsonSync(deployConfigStorePath, {});
+  fse.writeJsonSync(dbStorePath, dbStore);
+  fse.writeJsonSync(auditdbStorePath, auditdbStore);
+  fse.writeJsonSync(deployConfigStorePath, deployConfigStore);
 }
 
 // 最大的资源存放数量，默认 30 个
