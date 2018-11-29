@@ -10,7 +10,7 @@ const bodyParser = require('koa-body');
 
 const sshParser = require('./ssh-config-parser');
 const {
-  db, getDeployPath, zipAssetsStorePath, remoteZipStorePath,
+  db, getDeployPath, zipAssetsStorePath, remoteZipStorePath, deployConfigdb,
   audit, getAudit, maxAssetCount, sshPath, scpNotifyConfig,
   staticServerPath, superPowerChecker
 } = require('./config');
@@ -21,6 +21,7 @@ const uploader = require('./uploader/save-file')(zipAssetsStorePath);
 
 const projectEntity = require('./entities/project');
 const assetEntity = require('./entities/asset');
+const deployConfigEntity = require('./entities/deploy-config');
 
 const deploymentRouter = new Router();
 const assetUploadRouter = new Router();
@@ -315,7 +316,6 @@ const handleRelease = async (ctx, next) => {
 
 const releaseDone = async (ctx, next) => {
   await next();
-  console.log(6)
   ctx.body = {
     err: ctx.scpErr
   };
@@ -629,7 +629,66 @@ const downloadAsset = async (ctx) => {
   fs.createReadStream(zipFile).pipe(ctx.response);
 };
 
+const getSSHConfig = async (ctx) => {
+  const list = deployConfigdb.get('deployConfig').value();
+  let hostMapper = getSSHHostList();
+  let resList = objToArr(list, null, 0);
+  ctx.body = {
+    err: null,
+    data: resList
+  };
+};
+
+const addSSHConfig = async (ctx) => {
+  const { sshHost, desc, deployPath } = ctx.request.body;
+
+  const createID = uuidv3(sshHost + desc + deployPath, uuidv3.DNS);
+  
+  let newConfig = entityMerge(ctx.request.body, deployConfigEntity);
+  Object.assign(newConfig, {
+    id: createID,
+    createdDate: Date.now(),
+  });
+  
+  deployConfigdb.set(`deployConfig.${createID}`, newConfig).write();
+
+  ctx.body = {
+    err: null,
+    data: []
+  };
+};
+
+const updateSSHConfig = async (ctx) => {
+  const { sshHost, desc, deployPath, id } = ctx.request.body;
+
+  if(id) {
+    let newConfig = {
+      sshHost, desc, deployPath
+    };
+    
+    deployConfigdb.set(`deployConfig.${id}`, newConfig).write();
+  }
+
+  ctx.body = {
+    err: id ? null : 'need id',
+    data: []
+  };
+};
+
+const delSSHConfig = async (ctx) => {
+  const { id } = ctx.request.body;
+
+  if(id) {
+    deployConfigdb.unset(`deployConfig.${id}`).write();
+  }
+
+  ctx.body = {
+    err: id ? null : 'need id',
+  };
+};
+
 deploymentRouter.put('/project', checkProjAuth, updateProject);
+deploymentRouter.put('/ssh-config', updateSSHConfig);
 deploymentRouter.patch('/project', checkProjAuth, updateProject);
 
 deploymentRouter.post('/release', checkProjAuth, handleRelease, handleSCP);
@@ -638,15 +697,18 @@ deploymentRouter.post('/del-asset', checkProjAuth, delAsset);
 deploymentRouter.post('/join', applyToJoin);
 deploymentRouter.post('/project', createProject);
 deploymentRouter.post('/approve', checkProjAuth, approveJoinToProject);
+deploymentRouter.post('/ssh-config', addSSHConfig);
 
 deploymentRouter.del('/project', checkProjAuth, deleteProject);
 deploymentRouter.del('/assets', checkProjAuth, delAsset);
+deploymentRouter.del('/ssh-config', delSSHConfig);
 
 deploymentRouter.get('/download-asset', downloadAsset);
 deploymentRouter.get('/assets', getAssets);
 deploymentRouter.get('/audit', getAutid);
 deploymentRouter.get('/ssh-host', getSshHosts);
 deploymentRouter.get('/project', getProjectList);
+deploymentRouter.get('/ssh-config', getSSHConfig);
 
 assetUploadRouter.post('/upload',
   // uploader.single('assetZip'),

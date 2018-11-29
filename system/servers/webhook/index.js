@@ -66,7 +66,6 @@ const handleGitWebHook = (ctx) => {
 
 const scpMsgFilter = ({ project, desc, date, operator, host = '' }) => {
   date = dateFormat(date, 'yyyy-mm-dd hh:MM:ss');
-  console.log(host)
   return `
 <code>项目: ${project}</code>
 <code>操作者: ${operator}</code>

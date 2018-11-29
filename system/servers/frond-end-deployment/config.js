@@ -12,6 +12,7 @@ const cwd = process.cwd();
 const dbPath = path.join(cwd, './runtime/f-e-deployment-store');
 const dbStorePath = path.join(dbPath, './store.json');
 const auditdbStorePath = path.join(dbPath, './audit-store.json');
+const deployConfigStorePath = path.join(dbPath, './deployment-store.json');
 const staticServerPath = path.join(cwd, './assets/public');
 const adminResourcePath = path.join(cwd, './assets', adminDirName);
 const zipAssetsStorePath = path.join(cwd, './assets/zips');
@@ -29,6 +30,7 @@ if(!fs.existsSync(dbStorePath)) {
   fse.mkdirpSync(dbPath);
   fse.writeJsonSync(dbStorePath, {});
   fse.writeJsonSync(auditdbStorePath, {});
+  fse.writeJsonSync(deployConfigStorePath, {});
 }
 
 // 最大的资源存放数量，默认 30 个
@@ -39,6 +41,10 @@ const db = low(adapter);
 
 const auditAdapter = new FileSync(auditdbStorePath);
 const auditdb = low(auditAdapter);
+
+const deployAdapter = new FileSync(deployConfigStorePath);
+const deployConfigdb = low(deployAdapter);
+
 const sshPath = path.join(os.homedir(), ".ssh/config");
 
 /**
@@ -91,6 +97,7 @@ module.exports = {
   sshPath,
   scpNotifyConfig,
   superPowerChecker,
+  deployConfigdb,
   db,
   adapter,
   getDeployPath: (projCode) => {
