@@ -628,7 +628,7 @@ const downloadAsset = async (ctx) => {
     'Content-Disposition': 'attachment; filename=' + fileName
   });
 
-  fs.createReadStream(zipFile).pipe(ctx.response);
+  ctx.body = fs.createReadStream(zipFile);
 };
 
 const getSSHConfig = async (ctx) => {

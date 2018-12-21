@@ -1,6 +1,6 @@
 const users = [
   'alex', 'joyy', 'kiven', 'fred', 'erica', 'alan', 'matt', 'jeremy',
-  'Ricardo'
+  'Ricardo', 'jason'
 ];
 
 let userAuth = {
