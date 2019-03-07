@@ -41,3 +41,5 @@ assets/_admin/*
 runtime/dynamic-routres/get-config-from-server
 
 _none
+
+system/servers/webhook/config.js
