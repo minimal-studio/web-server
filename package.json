@@ -17,6 +17,12 @@
     "type": "git",
     "url": "git+https://github.com/SANGET/uke-web-server.git"
   },
+  "author": "Alex",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SANGET/uke-web-server/issues"
+  },
+  "homepage": "https://github.com/SANGET/uke-web-server#readme",
   "devDependencies": {
     "@babel/preset-env": "^7.0.0",
     "babel-eslint": "^10.0.1",
@@ -28,12 +34,6 @@
     "mocha": "^5.2.0",
     "nodemon": "^1.18.3"
   },
-  "author": "Alex",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/SANGET/uke-web-server/issues"
-  },
-  "homepage": "https://github.com/SANGET/uke-web-server#readme",
   "dependencies": {
     "body-parser": "^1.18.3",
     "compression": "^1.7.3",
