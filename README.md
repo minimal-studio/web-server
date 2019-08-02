@@ -61,10 +61,6 @@ TODO 提供自动构建
 npm i uke-cli -g
 ```
 
-### 更新
-
-TODO
-
 ### 手动使用
 
 ```shell
@@ -75,6 +71,12 @@ npm start // 使用 nodemon
 ```
 
 ### 部署
+
+#### 使用 Docker
+
+TODO
+
+#### 压缩上传
 
 把项目压缩，然后 scp 到目标路径，解压并且 npm install，
 
