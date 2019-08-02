@@ -1,0 +1,5 @@
+docker run \
+  -p 28101:28101 -d \
+  -e "NODE_ENV=production" \
+  --name "uke-webserver" \
+  sanget/uke-webserver
