@@ -26,7 +26,7 @@ log.txt
 size.log
 public/html/index.ejs
 public/js/version.txt
-package-lock.json
+# package-lock.json
 
 yarn.lock
 public/posts/
