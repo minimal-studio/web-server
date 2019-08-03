@@ -1,22 +1,24 @@
 # uke web server
 
+基于 Node Express 的简易 webserver，用于快速开始 RESTFul 应用业务。
+
 [![Build Status](https://travis-ci.org/SANGET/uke-web-server.svg?branch=master)](https://travis-ci.org/SANGET/uke-web-server)
 
-两层结构
+## 结构
 
 - system 系统服务
 - runtme 运行时服务，挂载动态路由，和运行时文件
 
 -----
 
-## 运行版本
+## 支持版本
 
 - [express](https://github.com/SANGET/uke-web-server)
 - [koa](https://github.com/SANGET/uke-web-server/tree/koa)
 
 -----
 
-## 依赖
+## 安装
 
 - node > 10
 - babel 7
@@ -38,7 +40,7 @@ npm i pm2 -g
 
 -----
 
-## 提供的功能
+## 特性
 
 1. 提供一个通用的、快速搭建 web server 的脚手架
 2. 提供 system 系统服务，和 runtime 运行时动态路由机制
@@ -61,7 +63,7 @@ TODO 提供自动构建
 npm i uke-cli -g
 ```
 
-### 手动使用
+### 手动构建
 
 ```shell
 git clone https://github.com/SANGET/orion-web-server.git yourProjName
@@ -74,7 +76,10 @@ npm start // 使用 nodemon
 
 #### 使用 Docker
 
-TODO
+```shell
+docker pull sanget/uke-webserver
+docker run -p 28101:80 -d sanget/uke-webserver
+```
 
 #### 压缩上传
 
