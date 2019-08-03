@@ -11,6 +11,17 @@
 
 -----
 
+## 特性
+
+1. 提供一个通用的、快速搭建 web server 的脚手架
+2. 提供 system 系统服务，和 runtime 运行时动态路由机制
+3. 前端资源版本管理，资源的权限管理
+4. 简易的权限
+
+- [基本结构](./docs/structure.md)
+
+-----
+
 ## 支持版本
 
 - [express](https://github.com/SANGET/uke-web-server)
@@ -37,17 +48,6 @@ nvm install stable
 # pm2
 npm i pm2 -g
 ```
-
------
-
-## 特性
-
-1. 提供一个通用的、快速搭建 web server 的脚手架
-2. 提供 system 系统服务，和 runtime 运行时动态路由机制
-3. 前端资源版本管理，资源的权限管理
-4. 简易的权限
-
-- [基本结构](./docs/structure.md)
 
 -----
 
