@@ -27,4 +27,4 @@ EXPOSE 28101 28102 6650 8890
 
 RUN npm install pm2 -g
 ENV NODE_ENV=production
-CMD ["pm2-runtime", "system/app.js"]
+CMD ["pm2-runtime", "system/index.js"]
