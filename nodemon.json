@@ -1,0 +1,5 @@
+{
+  "verbose": true,
+  "watch": ["./dist/*"],
+  "delay": "2500"
+}
