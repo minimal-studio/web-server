@@ -28,7 +28,7 @@ public/html/index.ejs
 public/js/version.txt
 # package-lock.json
 
-yarn.lock
+# yarn.lock
 public/posts/
 version.js
 web-server.log
@@ -43,3 +43,5 @@ runtime/dynamic-routres/get-config-from-server
 _none
 
 system/servers/webhook/config.js
+
+dist
