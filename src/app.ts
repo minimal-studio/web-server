@@ -5,6 +5,7 @@ import cors from "cors";
 import morgan from "morgan";
 import fs from "fs";
 import path from "path";
+import bodyParser from "body-parser";
 
 import Controller from "./controllers";
 
@@ -14,13 +15,15 @@ import Controller from "./controllers";
 // import let processUpdater from ('../routers/proces-updater';
 // import handleError from "./routers/erro-handle";
 
-let app = express();
+const app = express();
 
 // const serversDir = "servers";
 
 app.use(helmet());
 app.use(compression());
 app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(Controller);
 

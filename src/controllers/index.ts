@@ -1,8 +1,11 @@
 import { Router } from "express";
-import { rootController } from "./root";
+import * as rootController from "./root";
+import * as authController from "./auth";
 
 const ControllerRouter = Router();
 
-ControllerRouter.get("/", rootController);
+ControllerRouter.get("/", rootController.index);
+ControllerRouter.post("/login", authController.login);
+ControllerRouter.post("/register", authController.register);
 
 export default ControllerRouter;
