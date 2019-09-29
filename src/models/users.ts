@@ -5,7 +5,7 @@ const query = (sql: string): Promise<any> => {
     const connection = mysql.createConnection({
       host     : "localhost",
       user     : "root",
-      password : "xiangjie",
+      password : "xiangqwejie",
       database : "ttzq"
     });
   

@@ -7,7 +7,7 @@
     "start": "npm run dev",
     "build": "npm run build-ts && npm run lint",
     "serve": "node dist/index.js",
-    "dev": "nodemon dist/index.js",
+    "dev": "nodemon",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run dev\"",
     "test": "jest --forceExit --coverage --verbose",
     "watch-test": "npm run test -- --watchAll",
@@ -64,7 +64,7 @@
     "shelljs": "^0.8.3",
     "supertest": "^4.0.2",
     "ts-jest": "^24.0.2",
-    "ts-node": "^8.3.0",
+    "ts-node": "^8.4.1",
     "typescript": "^3.5.2"
   },
   "dependencies": {
