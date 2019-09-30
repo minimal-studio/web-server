@@ -1,6 +1,6 @@
 {
   "name": "uke-web-server",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "",
   "scripts": {
     "postinstall": "npm run build-ts",
@@ -85,9 +85,11 @@
     "nodemailer": "^6.2.1",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
+    "reflect-metadata": "^0.1.13",
     "request": "^2.88.0",
     "request-promise": "^4.2.4",
     "telegraf": "^3.32.0",
+    "typeorm": "^0.2.19",
     "unzip": "^0.1.11",
     "uuid": "^3.3.3",
     "winston": "^3.2.1"
