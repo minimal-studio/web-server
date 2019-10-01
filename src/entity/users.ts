@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Entity, Column, PrimaryGeneratedColumn, UpdateDateColumn, CreateDateColumn } from "typeorm";
 
 @Entity()
 export class Users {
@@ -7,20 +7,20 @@ export class Users {
   id: number;
 
   @Column({ type: "varchar" })
-  account: string;
+  username: string;
 
   @Column({ type: "varchar" })
   password: string;
 
-  @Column({ type: "varchar" })
+  @Column({ type: "varchar", default: "" })
   role: string;
 
-  @Column({ type: "varchar" })
+  @Column({ type: "varchar", default: "" })
   avatarUrl: string;
 
   @Column({ type: "timestamp" })
   createAt: Date;
 
-  @Column({ type: "timestamp" })
-  updateAt: Date;
+  @UpdateDateColumn({ type: "timestamp" })
+  updateAt: number;
 }
