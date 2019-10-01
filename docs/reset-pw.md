@@ -2,6 +2,12 @@
 
 - 参考: https://gist.github.com/zubaer-ahammed/c81c9a0e37adc1cb9a6cdc61c4190f52
 
+```shell
+sudo /usr/local/mysql/support-files/mysql.server start
+sudo /usr/local/mysql/support-files/mysql.server stop
+sudo /usr/local/mysql/support-files/mysql.server status
+```
+
 Shell
 
 ```shell
