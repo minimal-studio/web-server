@@ -1,9 +1,18 @@
-[{
+{
   "name": "default",
   "type": "mysql",
   "host": "localhost",
   "port": 3306,
-  "username": "test",
-  "password": "test",
-  "database": "test"
-}]
+  "database": "test",
+  "username": "root",
+  "password": "xiangjie",
+  "entities": [
+    "src/entity/**/*.ts"
+  ],
+  "migrations": [
+    "src/migration/**/*.ts"
+  ],
+  "subscribers": [
+    "src/subscriber/**/*.ts"
+  ]
+}
