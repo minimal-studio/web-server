@@ -6,7 +6,7 @@ import errorHandler from "errorhandler";
 import app from "./app";
 import { Port } from "./configs/site";
 
-createConnection().then((connection: Connection) => {
+createConnection().then(() => {
   /**
    * Error Handler. Provides full stack - remove for production
    */
@@ -23,4 +23,4 @@ createConnection().then((connection: Connection) => {
     );
     console.log("  Press CTRL-C to stop\n");
   });
-});
+}).catch(error => console.log(error));
