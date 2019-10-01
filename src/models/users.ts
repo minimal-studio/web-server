@@ -4,9 +4,9 @@ const query = (sql: string): Promise<any> => {
   return new Promise((resolve, reject) => {
     const connection = mysql.createConnection({
       host     : "localhost",
-      user     : "root",
-      password : "xiangqwejie",
-      database : "ttzq"
+      user     : "test",
+      password : "test",
+      database : "test"
     });
   
     connection.connect();
