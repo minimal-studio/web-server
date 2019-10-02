@@ -8,12 +8,12 @@
   "password": "test",
   "synchronize": true,
   "entities": [
-    "src/entity/**/*.ts"
+    "packages/entities/**/*.ts"
   ],
   "migrations": [
-    "src/migration/**/*.ts"
+    "packages/migration/**/*.ts"
   ],
   "subscribers": [
-    "src/subscriber/**/*.ts"
+    "packages/subscriber/**/*.ts"
   ]
 }

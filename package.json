@@ -2,8 +2,9 @@
   "name": "uke-web-server",
   "version": "0.4.0",
   "description": "",
+  "private": true,
+  "workspaces": ["packages/*"],
   "scripts": {
-    "postinstall": "npm run build-ts",
     "start": "npm run dev",
     "build": "npm run build-ts && npm run lint",
     "serve": "node dist/index.js",
