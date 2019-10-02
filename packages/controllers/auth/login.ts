@@ -1,35 +1,33 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { getManager } from "typeorm";
 import bcrypt from "bcrypt";
 
 import { Users } from "@nws/entities/users";
 import pwHelper, { connectPW } from "@nws/utils/pw-helper";
 
-const handleLoginFail = (res: Response) => {
-  res.json({
-    err: true,
-    message: "用户名或密码错误"
-  });
-};
-
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response, next: NextFunction) => {
   const { username, password } = req.body;
   const userRepository = getManager().getRepository(Users);
   const user = await userRepository.findOne({ username });
   if(user) {
     const _pw = connectPW(password, user.createAt);
-    bcrypt.compare(_pw, user.password, (err, result) => {
-      // res == true
-      if(result) {
-        return res.json({
-          err: false,
-          message: "登陆成功"
-        });
+    bcrypt.compare(_pw, user.password, (err, isMatch) => {
+      if(!err && isMatch) {
+        res.locals.handledResult = {
+          code: 0
+        };
+        next();
       } else {
-        return handleLoginFail(res);
+        res.locals.handledResult = {
+          code: 1001
+        };
+        next();
       }
     });
   } else {
-    return handleLoginFail(res);
+    res.locals.handledResult = {
+      code: 1001
+    };
+    next();
   }
 };

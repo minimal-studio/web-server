@@ -1,0 +1,6 @@
+{
+  "name": "@nws/res-handler",
+  "description": "统一处理 api 回应的模块",
+  "version": "0.1.0",
+  "private": true
+}
