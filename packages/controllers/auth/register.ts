@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { getManager } from "typeorm";
 
-import { Users } from "../../entity/users";
-import pwHelper from "../../utils/pw-helper";
+import { Users } from "@nws/entities/users";
+import pwHelper from "@nws/utils/pw-helper";
 
 export const register = async (req: Request, res: Response) => {
   const { username, password } = req.body;

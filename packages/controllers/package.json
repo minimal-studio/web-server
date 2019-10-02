@@ -1,0 +1,6 @@
+{
+  "name": "@nws/controllers",
+  "version": "0.1.0",
+  "private": true,
+  "type": "index.ts"
+}

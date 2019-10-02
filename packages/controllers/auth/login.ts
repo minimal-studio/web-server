@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import { getManager } from "typeorm";
 import bcrypt from "bcrypt";
 
-import { Users } from "../../entity/users";
-import pwHelper, { connectPW } from "../../utils/pw-helper";
+import { Users } from "@nws/entities/users";
+import pwHelper, { connectPW } from "@nws/utils/pw-helper";
 
 const handleLoginFail = (res: Response) => {
   res.json({

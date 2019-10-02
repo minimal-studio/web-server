@@ -7,7 +7,7 @@ import fs from "fs";
 import path from "path";
 import bodyParser from "body-parser";
 
-import Controller from "./controllers";
+import Controller from "@nws/controllers";
 
 // import let dynamicRoute from ('../routers/dynami-router';
 // import { mainServerPort, systemDir } from "./config";
